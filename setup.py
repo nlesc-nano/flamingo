@@ -13,6 +13,18 @@ with open(os.path.join(HERE, 'flamingo', '__version__.py')) as f:
 with open('README.rst') as readme_file:
     README = readme_file.read()
 
+try:
+    import rdkit
+    import h5py
+except ModuleNotFoundError:
+    exc = ModuleNotFoundError(
+        """'flamingo' requires the 'rdkit' package: https://anaconda.org/conda-forge/rdkit
+and the h5py package: https://anaconda.org/conda-forge/h5py"""
+    )
+    exc.__cause__ = None
+    raise exc
+
+
 setup(
     name='flamingo',
     version=version['__version__'],
@@ -28,7 +40,7 @@ setup(
     keywords='flamingo',
     classifiers=[
         'Development Status :: 4 - Beta',
-        'Intended Audience :: Science/Research',        
+        'Intended Audience :: Science/Research',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
