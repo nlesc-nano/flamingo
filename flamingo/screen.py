@@ -255,14 +255,6 @@ def create_ouput_file(result_path: Path, k: int) -> Path:
     return parent / "candidates.csv"
 
 
-def start_logger(opts: Options) -> None:
-    """Initial configuration of the logger."""
-    version = pkg_resources.get_distribution('swan').version
-    configure_logger(Path("."))
-    logger.info(f"Using swan version: {version} ")
-    logger.info(f"Working directory is: {opts.workdir}")
-
-
 def main():
     """Parse the command line arguments to screen smiles."""
     parser = argparse.ArgumentParser(description="modeller -i input.yml")
@@ -271,8 +263,10 @@ def main():
                         help="Input file with options")
     args = parser.parse_args()
 
-    options = validate_input(args.i)
+    configure_logger(Path("."), "flamingo")
 
+    # parse command line options and run workflow
+    options = validate_input(args.i)
     split_filter_in_batches(options)
 
 
