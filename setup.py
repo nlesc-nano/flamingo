@@ -2,7 +2,7 @@
 
 import os
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
@@ -21,7 +21,7 @@ setup(
     author="Felipe Zapata",
     author_email='f.zapata@esciencecenter.nl',
     url='https://github.com/https://github.com/nlesc-nano/flamingo',
-    package_dir={'flamingo': 'flamingo'},
+    packages=find_packages(),
     include_package_data=True,
     license="Apache Software License 2.0",
     zip_safe=False,
@@ -46,6 +46,9 @@ setup(
         'console_scripts': [
             'smiles_screener=flamingo.screen:main'
         ]
+    },
+    package_data={
+        'flamingo': ['data/*']
     },
     data_files=[('citation/flamingo', ['CITATION.cff'])],
     extras_require={
