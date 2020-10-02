@@ -1,4 +1,13 @@
-"""Compute the fingerprints of an array of smiles."""
+"""Compute the fingerprints of an array of smiles.
+
+API
+---
+.. autofunction:: compute_molecular_graph_edges
+.. autofunction:: generate_fingerprints
+.. autofunction:: generate_molecular_features
+
+
+"""
 
 from itertools import chain
 
@@ -11,6 +20,8 @@ from typing import Any, Tuple
 from typing_extensions import Protocol
 
 from .atomic_features import (ELEMENTS, BONDS, compute_hybridization_index, dict_element_features)
+
+__all__ = ["compute_molecular_graph_edges", "generate_fingerprints", "generate_molecular_features"]
 
 
 class FingerPrintCalculator(Protocol):

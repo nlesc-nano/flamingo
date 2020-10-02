@@ -4,8 +4,7 @@ import mendeleev
 import numpy as np
 from rdkit.Chem import rdchem
 
-
-__all__ = ["dict_element_features", "compute_hybridization_index"]
+__all__ = ["BONDS", "ELEMENTS", "dict_element_features", "compute_hybridization_index"]
 
 ELEMENTS = ["C", "N", "O", "F", "P", "S", "Cl", "Br", "I"]
 BONDS = [rdchem.BondType.SINGLE, rdchem.BondType.AROMATIC,
