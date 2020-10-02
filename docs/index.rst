@@ -12,6 +12,7 @@ Welcome to flamingo's documentation!
 
    includereadme
    tutorial_screening
+   api_molecular_features
    api_filtering
 
 Indices and tables

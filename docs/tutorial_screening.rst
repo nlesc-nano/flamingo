@@ -107,8 +107,8 @@ To perform the screening you just need to execute the following command ::
 
 Job distributions and results
 *****************************
-For a given filter, **Swan** will try to compute the molecular properties in parallel since properties
-can be computed independently for each molecule. Therefore **Swan** split the molecular set
+For a given filter, **Flamingo** will try to compute the molecular properties in parallel since properties
+can be computed independently for each molecule. Therefore **Flamingo** split the molecular set
 into batches that can be computed in parallel. The `batch_size` keyword is used to control the
 size of these batches.
 

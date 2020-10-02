@@ -1,6 +1,9 @@
 """
 Module to screen smile by functional group and other properties.
 
+API
+---
+
 .. autofunction:: split_filter_in_batches
 .. autofunction:: apply_filters
 

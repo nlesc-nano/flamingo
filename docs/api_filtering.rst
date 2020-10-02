@@ -1,4 +1,4 @@
-API Smiles Screener
-===================
+Smiles Screener
+===============
 
-.. automodule:: swan.filter.screen
+.. automodule:: flamingo.screen
