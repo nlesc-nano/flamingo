@@ -23,7 +23,7 @@ def sigmoid(x: np.ndarray) -> np.ndarray:
 def get_model_data(name: str) -> str:
     """look for the data for a given model with `name`."""
     path = f"data/scscore/full_reaxys_model_{name}/model.ckpt-10654.as_numpy.json.gz"
-    return pkg_resources.resource_filename("swan", path)
+    return pkg_resources.resource_filename("flamingo", path)
 
 
 class SCScorer():
