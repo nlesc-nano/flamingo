@@ -21,9 +21,7 @@ setup(
     author="Felipe Zapata",
     author_email='f.zapata@esciencecenter.nl',
     url='https://github.com/https://github.com/nlesc-nano/flamingo',
-    packages=[
-        'flamingo',
-    ],
+    package_dir={'flamingo': 'flamingo'},
     include_package_data=True,
     license="Apache Software License 2.0",
     zip_safe=False,
@@ -46,7 +44,7 @@ setup(
         'pyyaml>=5.1.1', 'retry', 'schema'],
     entry_points={
         'console_scripts': [
-            'smiles_screener=swan.filter.screen:main'
+            'smiles_screener=flamingo.screen:main'
         ]
     },
     data_files=[('citation/flamingo', ['CITATION.cff'])],
