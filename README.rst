@@ -1,11 +1,13 @@
 .. image:: https://github.com/nlesc-nano/flamingo/workflows/build%20with%20conda/badge.svg
    :target: https://github.com/nlesc-nano/flamingo/actions
+.. image:: https://readthedocs.org/projects/flamingo-molecular-properties-calculator/badge/?version=latest
+   :target: https://flamingo-molecular-properties-calculator.readthedocs.io/en/latest/?badge=latest
 
 ########
 flamingo
 ########
 
-Compute and filter molecular properties.
+Compute and filter molecular properties. See `documentation <https://flamingo-molecular-properties-calculator.readthedocs.io/en/latest/>`_.
 
 Installation
 ============
