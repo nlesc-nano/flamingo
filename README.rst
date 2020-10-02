@@ -4,14 +4,47 @@ flamingo
 
 Compute and filter molecular properties.
 
-Installation
-------------
+- Download miniconda for python3: miniconda_ (also you can install the complete anaconda_ version).
 
-To install flamingo, do:
+- Install according to: installConda_.
 
-.. code-block:: console
+- Create a new virtual environment using the following commands:
 
-  pip install git+https://github.com/nlesc-nano/flamingo.git@master
+  - ``conda create -n flamingo``
+
+- Activate the new virtual environment
+
+  - ``conda activate flamingo``
+
+To exit the virtual environment type  ``conda deactivate``.
+
+
+.. _dependecies:
+
+Dependencies installation
+-------------------------
+
+- Type in your terminal:
+
+  ``conda activate flamingo``
+
+Using the conda environment the following packages should be installed:
+
+
+- install RDKit_ and H5PY_:
+
+  - `conda install -y -q -c conda-forge  h5py rdkit`
+
+.. _installation:
+
+Package installation
+--------------------
+Finally install the package:
+
+- Install **flamingo** using pip:
+  - ``pip install git+https://github.com/nlesc-nano/flamingo.git@master``
+
+Now you are ready to use *flamingo*.
 
 
 Contributing
@@ -43,3 +76,7 @@ Credits
 *******
 
 This package was created with `Cookiecutter <https://github.com/audreyr/cookiecutter>`_ and the `NLeSC/python-template <https://github.com/NLeSC/python-template>`_.
+
+.. _installConda: https://conda.io/projects/conda/en/latest/user-guide/install/index.html
+.. _RDKit: https://www.rdkit.org
+.. _H5PY: https://www.h5py.org/
