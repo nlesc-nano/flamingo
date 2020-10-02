@@ -1,8 +1,14 @@
+.. image:: https://github.com/nlesc-nano/flamingo/workflows/build%20with%20conda/badge.svg
+   :target: https://github.com/nlesc-nano/flamingo/actions
+
 ########
 flamingo
 ########
 
 Compute and filter molecular properties.
+
+Installation
+============
 
 - Download miniconda for python3: miniconda_ (also you can install the complete anaconda_ version).
 
