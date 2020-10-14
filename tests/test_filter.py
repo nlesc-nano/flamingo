@@ -64,7 +64,7 @@ def test_filter_cli(mocker) -> None:
     mocker.patch("argparse.ArgumentParser.parse_args", return_value=argparse.Namespace(
         i=PATH_INPUT_TEST_FILTER))
 
-    mocker.patch("swan.filter.screen.split_filter_in_batches", return_value=None)
+    mocker.patch("flamingo.screen.split_filter_in_batches", return_value=None)
     main()
 
 
