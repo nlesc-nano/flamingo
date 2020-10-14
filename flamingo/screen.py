@@ -27,7 +27,6 @@ from typing import FrozenSet
 
 import numpy as np
 import pandas as pd
-import pkg_resources
 import yaml
 from rdkit import Chem
 from schema import Optional, Or, Schema, SchemaError

@@ -28,7 +28,7 @@ from more_itertools import chunked
 from retry import retry
 from scm.plams import Settings
 
-from .utils import Options
+from .utils import Options, normalize_smiles
 
 __all__ = ["compute_bulkiness"]
 
@@ -150,6 +150,9 @@ def compute_batch_bulkiness(smiles: pd.Series, opts: Mapping[str, T], indices: p
     """Compute bulkiness using CAT."""
     chunk = smiles[indices]
     chunk_name = str(indices[0])
+
+    # Transform the smiles to normal representation
+    chunk = chunk.apply(normalize_smiles)
 
     # compute and extract the bulkiness
     metadata = PropertyMetadata("bulkiness", 'qd/properties/V_bulk')

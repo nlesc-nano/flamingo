@@ -1,17 +1,18 @@
 """Utility functions."""
 from pathlib import Path
-from typing import Dict, TypeVar
+from typing import Any, Dict
 
 import h5py
 import numpy as np
 import pandas as pd
+from rdkit import Chem
 
-T = TypeVar('T')
+__all__ = ["Options", "normalize_smiles", "read_molecules"]
 
 
 class Options(dict):
-    """
-    Extend the base class dictionary with a '.' notation.
+    """Extend the base class dictionary with a '.' notation.
+
     example:
     .. code-block:: python
        d = Options({'a': 1})
@@ -34,7 +35,7 @@ class Options(dict):
         """ Allow `obj.key = new_value` notation"""
         self.__setitem__(key, value)
 
-    def to_dict(self) -> Dict[str, T]:
+    def to_dict(self) -> Dict[str, Any]:
         """Convert to a normal dictionary."""
         def converter(var):
             return var.to_dict() if isinstance(var, Options) else var
@@ -80,3 +81,9 @@ def read_molecules(input_file: Path) -> pd.DataFrame:
     # remove unnamed columns
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
     return df
+
+
+def normalize_smiles(smile: str) -> str:
+    """Write a smile in its normal form."""
+    mol = Chem.MolFromSmiles(smile)
+    return Chem.MolToSmiles(mol)
