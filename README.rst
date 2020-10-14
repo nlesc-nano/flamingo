@@ -2,6 +2,8 @@
    :target: https://github.com/nlesc-nano/flamingo/actions
 .. image:: https://readthedocs.org/projects/flamingo-molecular-properties-calculator/badge/?version=latest
    :target: https://flamingo-molecular-properties-calculator.readthedocs.io/en/latest/?badge=latest
+.. image:: https://codecov.io/gh/nlesc-nano/flamingo/branch/master/graph/badge.svg?token=N6CU1B82X0
+   :target: https://codecov.io/gh/nlesc-nano/flamingo
 
 ########
 flamingo
