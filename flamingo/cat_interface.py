@@ -11,8 +11,7 @@ from contextlib import redirect_stderr
 from functools import partial
 from multiprocessing import Pool
 from pathlib import Path
-from typing import (Any, Callable, DefaultDict, List, Mapping, NamedTuple,
-                    TypeVar, Union)
+from typing import Any, Callable, DefaultDict, List, Mapping, NamedTuple, Union
 
 import h5py
 import numpy as np
@@ -155,7 +154,7 @@ def compute_batch_bulkiness(
     df = compute_property_using_cat(chunk, opts, chunk_name, metadata)
 
     bulkiness = pd.merge(chunk, df, left_on="smiles", right_on="ligand")["V_bulk"]
-    if len(smiles.index) != len(bulkiness):
+    if len(indices) != len(bulkiness):
         msg = "There is an incongruence in the bulkiness computed by CAT!"
         logger.error(f"There was an error processing chunk: {chunk_name}\n{msg}")
         values = np.repeat(np.nan, len(indices))
