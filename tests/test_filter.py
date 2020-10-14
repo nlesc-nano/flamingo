@@ -98,7 +98,7 @@ def test_contain_functional_groups(tmp_path: Path) -> None:
     check_expected(opts, expected)
 
 
-def test_exclude_functional_groups(tmp_path) -> None:
+def test_exclude_functional_groups(tmp_path: Path) -> None:
     """Test that some functional groups are excluded correctly."""
 
     smiles_file = "smiles_functional_groups.csv"
@@ -109,7 +109,7 @@ def test_exclude_functional_groups(tmp_path) -> None:
     check_expected(opts, expected)
 
 
-def test_filter_bulkiness(tmp_path) -> None:
+def test_filter_bulkiness(tmp_path: Path) -> None:
     """Test that the bulkiness filter is applied properly."""
     smiles_file = "smiles_carboxylic.csv"
     filters = {"bulkiness": {"lower_than": 20}}
@@ -121,11 +121,21 @@ def test_filter_bulkiness(tmp_path) -> None:
     check_expected(opts, expected)
 
 
-def test_filter_scscore(tmp_path) -> None:
+def test_filter_scscore_lower(tmp_path: Path) -> None:
     """Test that the scscore filter is applied properly."""
     smiles_file = "smiles_carboxylic.csv"
     filters = {"scscore": {"lower_than": 1.3}}
     opts = create_options(filters, smiles_file, tmp_path)
 
     expected = ("CC(=O)O",)
+    check_expected(opts, expected)
+
+
+def test_filter_scscore_greater(tmp_path: Path) -> None:
+    """Test that the scscore filter is applied properly."""
+    smiles_file = "smiles_functional_groups.csv"
+    filters = {"scscore": {"greater_than": 3.0}}
+    opts = create_options(filters, smiles_file, tmp_path)
+
+    expected = ("O=C(O)C1CNC2C3CC4C2N4C13",)
     check_expected(opts, expected)

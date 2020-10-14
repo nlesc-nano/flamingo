@@ -11,8 +11,8 @@ from contextlib import redirect_stderr
 from functools import partial
 from multiprocessing import Pool
 from pathlib import Path
-from typing import (Callable, DefaultDict, List, Mapping, NamedTuple, TypeVar,
-                    Union)
+from typing import (Any, Callable, DefaultDict, List, Mapping, NamedTuple,
+                    TypeVar, Union)
 
 import h5py
 import numpy as np
@@ -29,9 +29,8 @@ from .utils import Options, normalize_smiles
 __all__ = ["compute_bulkiness"]
 
 # Long types
-T = TypeVar('T')
 BatchResult = Union[np.ndarray, pd.DataFrame]
-Callback = Callable[[pd.Series, Mapping[str, T], pd.Index], BatchResult]
+Callback = Callable[[pd.Series, Mapping[str, Any], pd.Index], BatchResult]
 Reducer = Callable[[List[BatchResult]], BatchResult]
 
 # Starting logger
@@ -50,7 +49,7 @@ class PropertyMetadata(NamedTuple):
 
 
 @retry(FileExistsError, tries=100, delay=0.01)
-def call_cat(smiles: pd.Series, opts: Mapping[str, T], cat_properties: DefaultDict[str, bool],
+def call_cat(smiles: pd.Series, opts: Mapping[str, Any], cat_properties: DefaultDict[str, bool],
              chunk_name: str = "0") -> Path:
     """Call cat with a given `config` and returns a dataframe with the results.
 
@@ -116,7 +115,7 @@ optional:
 
 
 def compute_property_using_cat(
-        smiles: pd.Series, opts: Mapping[str, T],
+        smiles: pd.Series, opts: Mapping[str, Any],
         chunk_name: str, metadata: PropertyMetadata) -> pd.Series:
     """Compute the bulkiness for the candidates."""
     # Properties to compute using cat
@@ -142,7 +141,8 @@ def compute_property_using_cat(
     return df
 
 
-def compute_batch_bulkiness(smiles: pd.Series, opts: Mapping[str, T], indices: pd.Index) -> pd.Series:
+def compute_batch_bulkiness(
+        smiles: pd.Series, opts: Mapping[str, Any], indices: pd.Index) -> pd.Series:
     """Compute bulkiness using CAT."""
     chunk = smiles[indices]
     chunk_name = str(indices[0])
@@ -164,7 +164,8 @@ def compute_batch_bulkiness(smiles: pd.Series, opts: Mapping[str, T], indices: p
     return values
 
 
-def compute_batch_cosmo_rs(smiles: pd.Series, opts: Mapping[str, T], indices: pd.Index) -> pd.Series:
+def compute_batch_cosmo_rs(
+        smiles: pd.Series, opts: Mapping[str, Any], indices: pd.Index) -> pd.Series:
     """Compute the cosmo_rs properties of the `smiles` with `indices`."""
     # chunk = smiles[indices]
     # chunk_name = str(indices[0])
