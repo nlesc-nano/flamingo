@@ -14,6 +14,7 @@ Welcome to flamingo's documentation!
    tutorial_screening
    api_molecular_features
    api_filtering
+   cat_interface
 
 Indices and tables
 ==================

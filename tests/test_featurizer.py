@@ -4,16 +4,18 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem
 
-from flamingo.features.featurizer import generate_molecular_features
+from flamingo.features.featurizer import (compute_molecular_graph_edges,
+                                          generate_molecular_features)
+
+MOL = Chem.MolFromSmiles("CC(=O)O")
+AllChem.EmbedMolecule(MOL)
 
 
 def test_molecular_features():
     """Test that the atomic and bond features are properly created."""
     # Generate mol and add conformers
-    mol = Chem.MolFromSmiles("CC(=O)O")
-    AllChem.EmbedMolecule(mol)
 
-    atomic, bond = generate_molecular_features(mol)
+    atomic, bond = generate_molecular_features(MOL)
 
     # There are four heavy atoms with 17 atomic features each
     assert atomic.shape == (4, 17)
@@ -24,3 +26,11 @@ def test_molecular_features():
     # All entries in the matrix are different of Nan
     assert not np.all(np.isnan(atomic))
     assert not np.all(np.isnan(bond))
+
+
+def test_molecular_graph():
+    """Test that the molecular graph is correctly generated."""
+    graph = compute_molecular_graph_edges(MOL)
+    expected = np.array([[0, 1, 1, 2, 1, 3], [1, 0, 2, 1, 3, 1]], dtype=np.int)
+
+    assert np.all(graph == expected)

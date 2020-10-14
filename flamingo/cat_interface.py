@@ -1,8 +1,4 @@
-"""Interface with CAT/PLAMS Packages.
-
-Index
------
-.. currentmodule:: swan.cat_interface
+"""Interface with `CAT <https://cat.readthedocs.io/en/latest/>`_.
 
 API
 ---
@@ -199,13 +195,14 @@ def compute_bulkiness(smiles: pd.Series, opts: Options) -> np.ndarray:
     Parameters
     ----------
     smiles
-        Pandas.Series with the smiles to compute
+        `pandas.Series` with the smiles to compute
     opts
         Options to call CAT
 
     Returns
     -------
-        Numpy array with the computed properties
+    numpy.ndarray
+        Array with the computed properties
     """
     results = map_reduce(smiles, opts, compute_batch_bulkiness, np.concatenate)
 
@@ -230,7 +227,8 @@ def compute_cosmo_rs(smiles: pd.Series, opts: Options) -> pd.DataFrame:
 
     Returns
     -------
-        DataFrame with the properties values
+    pandas.DataFrame 
+        Values
 
     """
     results = map_reduce(smiles, opts, compute_batch_cosmo_rs, pd.concat)

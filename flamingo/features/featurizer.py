@@ -4,7 +4,7 @@ API
 ---
 .. autofunction:: compute_molecular_graph_edges
 .. autofunction:: generate_fingerprints
-.. autofunction:: generate_molecular_features"
+.. autofunction:: generate_molecular_features
 
 """
 
