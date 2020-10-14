@@ -120,6 +120,9 @@ def split_filter_in_batches(opts: Options) -> None:
         output_file = create_ouput_file(result_path, k)
         try:
             apply_filters(batch, opts, output_file)
+        except RuntimeError as err:
+            print("Error applying filter:\n", err)
+            raise
         except:
             error, msg, _ = sys.exc_info()
             logger.error(f"Error processing batch: {k}\n{error} {msg}")
@@ -270,7 +273,3 @@ def main():
     # parse command line options and run workflow
     options = validate_input(args.i)
     split_filter_in_batches(options)
-
-
-if __name__ == "__main__":
-    main()

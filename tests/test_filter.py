@@ -3,7 +3,7 @@
 import argparse
 import shutil
 from pathlib import Path
-from typing import Any, List, Mapping
+from typing import Any, Iterable, Mapping
 
 import pandas as pd
 import pytest
@@ -47,7 +47,7 @@ def remove_output(output_path: str) -> None:
         shutil.rmtree(path)
 
 
-def check_expected(opts: Options, expected: List[str]) -> None:
+def check_expected(opts: Options, expected: Iterable[str]) -> None:
     """Run a filter workflow using `opts` and check the results."""
     try:
         computed = run_workflow(opts)
@@ -121,13 +121,29 @@ def test_filter_bulkiness(tmp_path: Path) -> None:
     check_expected(opts, expected)
 
 
+def test_filter_bulkiness_no_core(tmp_path: Path) -> None:
+    """Test that the bulkiness filter is applied properly."""
+    smiles_file = "smiles_carboxylic.csv"
+    filters = {"bulkiness": {"lower_than": 20}}
+    opts = create_options(filters, smiles_file, tmp_path)
+    opts.anchor = "O(C=O)[H]"
+
+    expected = []
+    with pytest.raises(RuntimeError) as err:
+        check_expected(opts, expected)
+
+    error = err.value.args[0]
+    print(err)
+    assert all(x in error for x in ("bulkiness","core"))
+
+
 def test_filter_scscore_lower(tmp_path: Path) -> None:
     """Test that the scscore filter is applied properly."""
     smiles_file = "smiles_carboxylic.csv"
     filters = {"scscore": {"lower_than": 1.3}}
     opts = create_options(filters, smiles_file, tmp_path)
 
-    expected = ("CC(=O)O",)
+    expected = {"CC(=O)O"}
     check_expected(opts, expected)
 
 
@@ -137,5 +153,5 @@ def test_filter_scscore_greater(tmp_path: Path) -> None:
     filters = {"scscore": {"greater_than": 3.0}}
     opts = create_options(filters, smiles_file, tmp_path)
 
-    expected = ("O=C(O)C1CNC2C3CC4C2N4C13",)
+    expected = {"O=C(O)C1CNC2C3CC4C2N4C13"}
     check_expected(opts, expected)
