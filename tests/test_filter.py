@@ -3,7 +3,7 @@
 import argparse
 import shutil
 from pathlib import Path
-from typing import List, Mapping, TypeVar
+from typing import Any, List, Mapping
 
 import pandas as pd
 
@@ -11,8 +11,6 @@ from flamingo.screen import main, split_filter_in_batches
 from flamingo.utils import Options, read_molecules
 
 from .utils_test import PATH_TEST
-
-T = TypeVar("T")
 
 
 PATH_INPUT_TEST_FILTER = PATH_TEST / "input_test_filter.yml"
@@ -27,7 +25,7 @@ def run_workflow(opts: Options) -> pd.DataFrame:
     return filter_mols
 
 
-def create_options(filters: Mapping[str, T], smiles_file: str, tmp_path: str) -> Options:
+def create_options(filters: Mapping[str, Any], smiles_file: str, tmp_path: str) -> Options:
     """Create Options object to filter."""
     opts = Options()
     opts.smiles_file = (PATH_TEST / smiles_file).absolute().as_posix()
