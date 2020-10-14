@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import importlib
 import os
 
 from setuptools import find_packages, setup
@@ -14,8 +15,8 @@ with open('README.rst') as readme_file:
     README = readme_file.read()
 
 try:
-    import rdkit
-    import h5py
+    importlib.import_module("rdkit")
+    importlib.import_module("h5py")
 except ModuleNotFoundError:
     exc = ModuleNotFoundError(
         """'flamingo' requires the 'rdkit' package: https://anaconda.org/conda-forge/rdkit
