@@ -6,12 +6,15 @@ from pathlib import Path
 from typing import Any, List, Mapping
 
 import pandas as pd
+import pytest
+import schema
+import yaml
+from pytest_mock import MockFixture
 
 from flamingo.screen import main, split_filter_in_batches
 from flamingo.utils import Options, read_molecules
 
 from .utils_test import PATH_TEST
-
 
 PATH_INPUT_TEST_FILTER = PATH_TEST / "input_test_filter.yml"
 
@@ -57,7 +60,7 @@ def check_expected(opts: Options, expected: List[str]) -> None:
         remove_output(opts.output_path)
 
 
-def test_filter_cli(mocker) -> None:
+def test_filter_cli(mocker: MockFixture) -> None:
     """Test that the CLI works correctly."""
     mocker.patch("argparse.ArgumentParser.parse_args", return_value=argparse.Namespace(
         i=PATH_INPUT_TEST_FILTER))
@@ -66,7 +69,25 @@ def test_filter_cli(mocker) -> None:
     main()
 
 
-def test_contain_functional_groups(tmp_path) -> None:
+def test_invalid_input(mocker: MockFixture, tmp_path: Path):
+    """Check that an error is raised if an invalid input is provided."""
+    invalid_input = {"smiles_file": "non-existing", "prop1": "invalid"}
+    path_input = tmp_path / "invalid.yml"
+
+    with open(path_input, 'w') as handler:
+        yaml.dump(invalid_input, handler)
+
+    mocker.patch("argparse.ArgumentParser.parse_args", return_value=argparse.Namespace(
+        i=path_input.absolute().as_posix()))
+
+    with pytest.raises(schema.SchemaMissingKeyError) as info:
+        main()
+
+    error = info.value.args[0]
+    assert "Missing key" in error
+
+
+def test_contain_functional_groups(tmp_path: Path) -> None:
     """Test that the functional group filter is applied properly."""
     smiles_file = "smiles_functional_groups.csv"
     filters = {"include_functional_groups": ["C(=O)O"]}
