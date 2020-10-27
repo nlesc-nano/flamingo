@@ -26,7 +26,7 @@ def get_model_data(name: str) -> str:
     return pkg_resources.resource_filename("flamingo", path)
 
 
-class SCScorer():
+class SCScorer:
     """Load a pretrained SCScore model and makes predictions with it.
 
     The model details can be found at: https://pubs.acs.org/doi/10.1021/acs.jcim.7b00622

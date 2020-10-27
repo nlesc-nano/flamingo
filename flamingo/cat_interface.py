@@ -101,6 +101,7 @@ optional:
 """, Loader=yaml.FullLoader)
 
     inp = Settings(input_cat)
+    print(inp)
     with open("cat_output.log", 'a') as f:
         with redirect_stderr(f):
             prep(inp)

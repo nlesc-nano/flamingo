@@ -3,95 +3,30 @@ Module to screen smile by functional group and other properties.
 
 API
 ---
-
 .. autofunction:: split_filter_in_batches
 .. autofunction:: apply_filters
-
-.. autodata:: SCHEMA_SCREEN
-    :annotation: : schema.Schema
-.. autodata:: SCHEMA_FILTERS
-    :annotation: : schema.Schema
-.. autodata:: SCHEMA_ORDERING
-    :annotation: : schema.Schema
 
 """
 
 import argparse
 import logging
 import sys
-import tempfile
 from functools import partial
-from numbers import Real
 from pathlib import Path
 from typing import FrozenSet
 
 import numpy as np
 import pandas as pd
-import yaml
 from rdkit import Chem
-from schema import Optional, Or, Schema, SchemaError
 
 from .features.featurizer import generate_fingerprints
 from .cat_interface import compute_bulkiness
 from .log_config import configure_logger
 from .models.scscore import SCScorer
+from .schemas import validate_input
 from .utils import Options, read_molecules
 
 logger = logging.getLogger(__name__)
-
-#: Schema to validate the ordering keywords
-SCHEMA_ORDERING = Or(
-    Schema({"greater_than": Real}),
-    Schema({"lower_than": Real}))
-
-#: Schema to validate the filters to apply for screening
-SCHEMA_FILTERS = Schema({
-    # Include or exclude one or more functional group using smiles
-    Optional("include_functional_groups"): Schema([str]),
-    Optional("exclude_functional_groups"): Schema([str]),
-
-    # Select smiles >, < or = to some value
-    Optional("bulkiness"): SCHEMA_ORDERING,
-
-    Optional("scscore"): SCHEMA_ORDERING
-})
-
-#: Schema to validate the input for screening
-SCHEMA_SCREEN = Schema({
-    # Load the dataset from a file
-    "smiles_file": str,
-
-    # Constrains to filter
-    "filters": SCHEMA_FILTERS,
-
-    # Functional group used as anchor
-    Optional("anchor", default="O(C=O)[H]"): str,
-
-    # path to the molecular coordinates of the Core to attach the ligands
-    Optional("core"): str,
-
-    # path to the workdir
-    Optional("workdir", default=tempfile.mkdtemp(prefix="swan_workdir_")): str,
-
-    # Number of molecules to compute simultaneously
-    Optional("batch_size", default=1000): int,
-
-    # File to print the final candidates
-    Optional("output_path", default="results"): str
-})
-
-
-def validate_input(file_input: str) -> Options:
-    """Check the input validation against an schema."""
-    with open(file_input, 'r') as f:
-        dict_input = yaml.load(f.read(), Loader=yaml.FullLoader)
-    try:
-        data = SCHEMA_SCREEN.validate(dict_input)
-        return Options(data)
-    except SchemaError as err:
-        msg = f"There was an error in the input yaml provided:\n{err}"
-        print(msg)
-        raise
 
 
 def split_filter_in_batches(opts: Options) -> None:
@@ -271,5 +206,5 @@ def main():
     configure_logger(Path("."), "flamingo")
 
     # parse command line options and run workflow
-    options = validate_input(args.i)
+    options = validate_input(args.i, action="screen")
     split_filter_in_batches(options)

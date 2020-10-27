@@ -57,7 +57,8 @@ setup(
         'pyyaml>=5.1.1', 'retry', 'schema'],
     entry_points={
         'console_scripts': [
-            'smiles_screener=flamingo.screen:main'
+            'smiles_screener=flamingo.screen:main',
+            'compute_properties=flamingo.properties:main'
         ]
     },
     package_data={
