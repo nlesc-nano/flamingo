@@ -101,7 +101,6 @@ optional:
 """, Loader=yaml.FullLoader)
 
     inp = Settings(input_cat)
-    print(inp)
     with open("cat_output.log", 'a') as f:
         with redirect_stderr(f):
             prep(inp)
@@ -124,6 +123,12 @@ def compute_property_using_cat(
 
     # run cat
     path_hdf5 = call_cat(smiles, opts, cat_properties, chunk_name=chunk_name)
+
+    return extract_dataframe_from_hdf5(path_hdf5, metadata)
+
+
+def extract_dataframe_from_hdf5(path_hdf5: Path, metadata: PropertyMetadata) -> pd.DataFrame:
+    """Get a Dataframe from the CAT HDF5 results."""
     with h5py.File(path_hdf5, 'r') as f:
         dset = f[metadata.dset]
         df = prop_to_dataframe(dset)
@@ -139,6 +144,7 @@ def compute_property_using_cat(
     df.drop_duplicates(subset=['ligand'], keep='first', inplace=True)
 
     return df
+
 
 
 def compute_batch_bulkiness(
