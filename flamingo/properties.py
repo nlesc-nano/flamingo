@@ -30,8 +30,8 @@ def compute_properties(smile: str, workdir: str) -> None:
         String representing the molecular for which the properties are going to be computed
 
     """
-    mol = Chem.MolFromSmiles(smile)
-    fingerprint = generate_fingerprints(mol, "morgan", 1024, use_chirality=True).reshape(1, 1024)
+    mol = pd.Series([Chem.MolFromSmiles(smile)])
+    fingerprint = generate_fingerprints(mol, "morgan", 1024, use_chirality=True)
     scorer = SCScorer("1024bool")
     prediction = scorer.compute_score(fingerprint)
 
@@ -45,10 +45,11 @@ def main():
     """Parse the command line arguments to screen smiles."""
     parser = argparse.ArgumentParser("compute_properties")
     parser.add_argument('-s', '--smile', required=True, help="smile to compute properties")
-    parser.add_argument('-w', '--workdir', required=True, help="Work directory")
+    parser.add_argument('-i', '--input', help="YAML settings")
+    parser.add_argument('-w', '--workdir', help="Work directory", default=".")
     args = parser.parse_args()
 
     # configure logger
     configure_logger(Path("."), "flamingo")
 
-    compute_properties(args.s, args.w)
+    compute_properties(args.smile, args.workdir)
