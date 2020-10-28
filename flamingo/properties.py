@@ -7,24 +7,51 @@ API
 
 """
 import argparse
+import json
 import logging
 from contextlib import redirect_stderr
 from pathlib import Path
 from typing import Any, Dict
 
+import h5py
 import pandas as pd
 import yaml
 from CAT.base import prep
 from scm.plams import Settings
 
 from .log_config import configure_logger
-from .cat_interface import PropertyMetadata, extract_dataframe_from_hdf5
 
 logger = logging.getLogger(__name__)
 
 
+def get_property_from_hdf5(handler: h5py.File, prop: str, name: str) -> Dict[str, Any]:
+    """Extract a given property from the hdf5."""
+    root = "ligand/properties"
+    dset = f"{root}/{prop}"
+    if dset not in handler:
+        print(f"There is no {dset} dataset in hdf5!")
+        return {}
+
+    values = handler[dset][()]
+    keys = handler[f"{root}/{name}"][()]
+    return {k.decode(): v for k, v in zip(keys, values.flatten())}
+
+
+def extract_ligand_properties(path_hdf5: Path) -> Dict[str, Any]:
+    """Extract the properties as a dictionary of dictionaries."""
+    properties = ['E_solv', 'pKa', 'gamma', 'LogP', 'cdft']
+    names = [f"{prop}_names" for prop in properties]
+
+    results = {}
+    with h5py.File(path_hdf5, 'r') as handler:
+        for prop, name in zip(properties, names):
+            results[prop] = get_property_from_hdf5(handler, prop, name)
+
+    return results
+
+
 def compute_properties_with_cat(smile: str, input_file: str, workdir: str) -> None:
-    """Compute properties for the given smile and write then down in csv format.
+    """Compute properties for the given smile and write then down in JSON format.
 
     Parameters
     ----------
@@ -41,10 +68,10 @@ def compute_properties_with_cat(smile: str, input_file: str, workdir: str) -> No
 
     path_hdf5 = Path(workdir) / "database" / "structures.hdf5"
 
-    metadata  =  PropertyMetadata("bulkiness", 'qd/properties/V_bulk')
-    df = extract_dataframe_from_hdf5(path_hdf5, metadata)
+    results = extract_ligand_properties(path_hdf5)
 
-    df.to_csv("results.csv", columns=["V_bulk"])
+    with open("results.json", 'w') as handler:
+        json.dump(results, handler, indent=4)
 
 
 def generate_input(smile: str, input_file: str) -> Dict[str, Any]:
