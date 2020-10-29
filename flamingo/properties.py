@@ -116,9 +116,9 @@ def compute_properties_with_cat(
     geometry = extract_optimized_geometry(path_hdf5)
 
     # Store input and results as json
-    for data, name in [(results, "results"), (input, "inputs")]:
+    for data, name in [(results, "results"), (inputs, "inputs")]:
         with open(path / f"{name}.json", 'w') as handler:
-            json.dump(results, handler, indent=4)
+            json.dump(data, handler, indent=4)
 
     # Store geometry in xyz format
     with open(path / "geometry.xyz", "w") as handler:
