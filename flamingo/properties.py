@@ -3,7 +3,7 @@ Module to compute molecular properties.
 
 API
 ---
-
+.. autofunction:: compute_properties_with_cat
 
 """
 import argparse
@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 import h5py
+import numpy as np
 import pandas as pd
 import yaml
 from CAT.base import prep
@@ -50,6 +51,27 @@ def extract_ligand_properties(path_hdf5: Path) -> Dict[str, Any]:
     return results
 
 
+def read_input_data(data: np.ndarray) -> str:
+    """Read a given input ``name``."""
+    if data.size == 0:
+        return ""
+
+    # Concatenate the data and covert it to str
+    data = data.flatten()
+    return "\n".join(map(lambda x: x.decode(), data))
+
+
+def extract_input_files(path_hdf5: Path) -> Dict[str, str]:
+    """Get the input used to run the calculations."""
+    inputs = {}
+    with h5py.File(path_hdf5, 'r') as handler:
+        names = [name for name in handler.keys() if name.startswith("job_settings_")]
+        for name in names:
+            inputs[name] = read_input_data(handler[name][()])
+
+    return inputs
+
+
 def compute_properties_with_cat(smile: str, input_file: str, workdir: str) -> None:
     """Compute properties for the given smile and write then down in JSON format.
 
@@ -57,6 +79,10 @@ def compute_properties_with_cat(smile: str, input_file: str, workdir: str) -> No
     ----------
     smile
         String representing the molecular for which the properties are going to be computed
+    input_file
+        YAML file with the settings to run the simulation
+    workdir
+        Folder where the simulation is going to write the output
 
     """
     # Add the smile to the CAT input
@@ -69,9 +95,11 @@ def compute_properties_with_cat(smile: str, input_file: str, workdir: str) -> No
     path_hdf5 = Path(workdir) / "database" / "structures.hdf5"
 
     results = extract_ligand_properties(path_hdf5)
+    inputs = extract_input_files(path_hdf5)
 
-    with open("results.json", 'w') as handler:
-        json.dump(results, handler, indent=4)
+    for name, data in [(results, "results"), (input, "inputs")]:
+        with open(f"{name}.json", 'w') as handler:
+            json.dump(results, handler, indent=4)
 
 
 def generate_input(smile: str, input_file: str) -> Dict[str, Any]:
