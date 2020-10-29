@@ -11,7 +11,7 @@ import json
 import logging
 from contextlib import redirect_stderr
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List, Union
 
 import h5py
 import numpy as np
@@ -72,7 +72,22 @@ def extract_input_files(path_hdf5: Path) -> Dict[str, str]:
     return inputs
 
 
-def compute_properties_with_cat(smile: str, input_file: str, workdir: str) -> None:
+def extract_optimized_geometry(path_hdf5: Path) -> str:
+    """Get the optimized geometry from the HDF5."""
+    with h5py.File(path_hdf5, 'r') as handler:
+        atoms = handler['ligand/atoms'][()]
+
+    data = atoms.flatten()
+    data = data[['symbol','x', 'y', 'z']]
+
+    geometry = f"{len(data)}\n\n"
+    for symbol, x, y, z in data:
+        geometry += f"{symbol.decode()} {x:.8f} {y:.8f} {z:.8f}\n"
+
+    return geometry
+
+def compute_properties_with_cat(
+        smile: str, input_file: Union[str, Path], workdir: str) -> None:
     """Compute properties for the given smile and write then down in JSON format.
 
     Parameters
@@ -88,21 +103,29 @@ def compute_properties_with_cat(smile: str, input_file: str, workdir: str) -> No
     # Add the smile to the CAT input
     inp = generate_input(smile, input_file)
 
-    with open("cat_output.log", 'a') as f:
+    path = Path(workdir)
+
+    with open(path / "cat_output.log", 'a') as f:
         with redirect_stderr(f):
             prep(Settings(inp))
 
-    path_hdf5 = Path(workdir) / "database" / "structures.hdf5"
+    path_hdf5 = path / "database" / "structures.hdf5"
 
     results = extract_ligand_properties(path_hdf5)
     inputs = extract_input_files(path_hdf5)
+    geometry = extract_optimized_geometry(path_hdf5)
 
-    for name, data in [(results, "results"), (input, "inputs")]:
-        with open(f"{name}.json", 'w') as handler:
+    # Store input and results as json
+    for data, name in [(results, "results"), (input, "inputs")]:
+        with open(path / f"{name}.json", 'w') as handler:
             json.dump(results, handler, indent=4)
 
+    # Store geometry in xyz format
+    with open(path / "geometry.xyz", "w") as handler:
+        handler.write(geometry)
 
-def generate_input(smile: str, input_file: str) -> Dict[str, Any]:
+
+def generate_input(smile: str, input_file: Union[str, Path]) -> Dict[str, Any]:
     """Insert the smile string into the CAT input."""
     with open(input_file, 'r') as handler:
         inp = handler.read()

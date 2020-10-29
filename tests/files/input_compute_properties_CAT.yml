@@ -2,16 +2,15 @@
 path: "."
 
 input_cores:
-   - Cd68Se55.xyz:
-        guess_bonds: False
+   -  "[H]Cl"
 
 input_ligands:
   - "{smile}"
 
 optional:
     qd:
-      bulkiness: True
+      bulkiness: False
     ligand:
-      cosmo-rs: False
-      cdft: False
+      cosmo-rs: True
+      cdft: True
       functional_groups: ['O(C=O)[H]']
