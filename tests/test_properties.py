@@ -3,14 +3,33 @@
 import json
 import os
 import shutil
+import sys
 from pathlib import Path
 
 from pytest_mock import MockFixture
 from scm.plams import Molecule
 
-from flamingo.properties import compute_properties_with_cat
+from flamingo.properties import compute_properties_with_cat, main
 
 from .utils_test import PATH_TEST
+
+
+def check_files(tmp_path: Path) -> None:
+    """Check that the simulation input/output files are readable."""
+    results = tmp_path / "results.json"
+    inputs = tmp_path / "inputs.json"
+    geometry = tmp_path / "geometry.xyz"
+
+    # Check that all the files exists
+    assert all(p.exists() for p in {results, inputs, geometry})
+
+    # Check that the files can be read
+    for file in (results, inputs):
+        with open(file, 'r') as handler:
+            json.load(handler)
+
+    # read molecule
+    Molecule(geometry)
 
 
 def test_properties_calculation(mocker: MockFixture, tmp_path: Path):
@@ -28,17 +47,4 @@ def test_properties_calculation(mocker: MockFixture, tmp_path: Path):
     #  Read from the hdf5
     compute_properties_with_cat(smile, input_file, tmp_path.as_posix())
 
-    results = tmp_path / "results.json"
-    inputs = tmp_path / "inputs.json"
-    geometry = tmp_path / "geometry.xyz"
-
-    # Check that all the files exists
-    assert all(p.exists() for p in {results, inputs, geometry})
-
-    # Check that the files can be read
-    for file in (results, inputs):
-        with open(file, 'r') as handler:
-            json.load(handler)
-
-    # read molecule
-    Molecule(geometry)
+    check_files(tmp_path)
