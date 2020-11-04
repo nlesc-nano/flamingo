@@ -4,6 +4,8 @@
    :target: https://flamingo-molecular-properties-calculator.readthedocs.io/en/latest/?badge=latest
 .. image:: https://codecov.io/gh/nlesc-nano/flamingo/branch/master/graph/badge.svg?token=N6CU1B82X0
    :target: https://codecov.io/gh/nlesc-nano/flamingo
+.. image:: https://zenodo.org/badge/300545275.svg
+   :target: https://zenodo.org/badge/latestdoi/300545275
 
 ########
 flamingo
