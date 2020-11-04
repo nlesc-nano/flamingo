@@ -54,7 +54,7 @@ setup(
         'nano-CAT@git+https://github.com/nlesc-nano/nano-CAT@master',
         'data-CAT@git+https://github.com/nlesc-nano/data-CAT@master',
         'mendeleev', 'more_itertools', 'numpy', 'pandas',
-        'pyyaml>=5.1.1', 'retry', 'schema'],
+        'pyyaml>=5.1.1', 'schema'],
     entry_points={
         'console_scripts': [
             'smiles_screener=flamingo.screen:main',
