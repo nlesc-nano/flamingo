@@ -6,6 +6,7 @@ API
 .. autofunction:: compute_properties_with_cat
 
 """
+import operator
 import argparse
 import json
 import logging
@@ -72,19 +73,22 @@ def extract_input_files(path_hdf5: Path) -> Dict[str, str]:
     return inputs
 
 
-def extract_optimized_geometry(path_hdf5: Path) -> str:
-    """Get the optimized geometry from the HDF5."""
+def extract_optimized_geometry(path_hdf5: Path, index: int = -1) -> str:
+    """Get the optimized geometry, at the specified index, from the HDF5 file."""
+    # A small precaution to ensure that no `slice` or `Sequence` is passed
+    i = operator.index(index)
+
     with h5py.File(path_hdf5, 'r') as handler:
-        atoms = handler['ligand/atoms'][()]
+        atoms = handler['ligand/atoms'][i]
+        atom_count = handler['ligand/atom_count'][i]
 
-    data = atoms.flatten()
-    data = data[['symbol','x', 'y', 'z']]
-
-    geometry = f"{len(data)}\n\n"
-    for symbol, x, y, z in data:
-        geometry += f"{symbol.decode()} {x:.8f} {y:.8f} {z:.8f}\n"
-
+    data = atoms[['symbol', 'x', 'y', 'z']][:atom_count]
+    geometry = f"{atom_count}\n\n"
+    geometry += "\n".join(
+        f'{symbol.decode():<2} {x:.8f} {y:.8f} {z:.8f}' for symbol, x, y, z in data
+    )
     return geometry
+
 
 def compute_properties_with_cat(
         smile: str, input_file: Union[str, Path], workdir: str) -> None:
