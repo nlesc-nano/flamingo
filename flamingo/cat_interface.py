@@ -122,7 +122,7 @@ def generate_bulkiness_section(cat_properties: Dict[str, Any]) -> str:
     string = "bulkiness:\n"
     for key in {"h_lim", "d"}:
         if bulkiness[key] is not None:
-            string += f"{' ':>10}{key}: {bulkiness[key]}"
+            string += f"{' ':>10}{key}: {bulkiness[key]}\n"
     return string
 
 
