@@ -21,6 +21,13 @@ SCHEMA_ORDERING = Or(
     Schema({"greater_than": Real}),
     Schema({"lower_than": Real}))
 
+#: Schema to validate the bulkiness parameters Check cat documentation
+#: https://cat.readthedocs.io/en/latest/4_optional.html#optional.qd.bulkiness
+SCHEMA_BULKINESS = Schema({
+    "lower_than": Real,
+    Optional("h_lim", default=None): Or(Real, None),
+    Optional("d", default="auto"): Or(str, Real, None)})
+
 #: Schema to validate the filters to apply for screening
 SCHEMA_FILTERS = Schema({
     # Include or exclude one or more functional group using smiles
@@ -28,7 +35,7 @@ SCHEMA_FILTERS = Schema({
     Optional("exclude_functional_groups"): Schema([str]),
 
     # Select smiles >, < or = to some value
-    Optional("bulkiness"): SCHEMA_ORDERING,
+    Optional("bulkiness"): SCHEMA_BULKINESS,
 
     Optional("scscore"): SCHEMA_ORDERING
 })

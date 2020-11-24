@@ -44,25 +44,26 @@ file following the subsequent schema yaml_::
  smiles_file:
    smiles.csv
 
-  core:
-    "Cd68Se55.xyz"
+ core:
+   "Cd68Se55.xyz"
 
-  anchor:
-    "O(C=O)[H]"
+ anchor:
+   "O(C=O)[H]"
 
-  batch_size: 1000
+ batch_size: 1000
     
-  filters:
-    include_functional_groups:
-      - "C(=O)O"
-    exclude_functional_groups:
-      - "S(=O)(=O)"
-    scscore:
-      lower_than:
-        3.0
-    bulkiness:
-      lower_than:
-        200
+ filters:
+   include_functional_groups:
+     - "C(=O)O"
+   exclude_functional_groups:
+     - "S(=O)(=O)"
+   scscore:
+     lower_than:
+       3.0
+   bulkiness:
+     h_lim: 10
+     d: "auto"
+     lower_than: 200
 
 
 The *smiles_file* entry contains the path to the files containing the smiles. The
