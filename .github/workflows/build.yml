@@ -37,7 +37,8 @@ jobs:
       env:
         CONDA_PREFIX: /usr/share/miniconda
       run: |
-        pytest
+        cd ..
+        pytest flamingo/flamingo flamingo/tests
 
     - name: coverage
       uses: codecov/codecov-action@v1
