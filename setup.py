@@ -62,7 +62,8 @@ setup(
         ]
     },
     package_data={
-        'flamingo': ['data/*']
+        'flamingo': ['data/scscore/full_reaxys_model_1024bool/model.ckpt-10654.as_numpy.json.gz',
+        'data/scscore/full_reaxys_model_2048bool/model.ckpt-10654.as_numpy.json.gz']
     },
     data_files=[('citation/flamingo', ['CITATION.cff'])],
     extras_require={
