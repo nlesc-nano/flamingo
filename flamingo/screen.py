@@ -97,6 +97,9 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
     for key in opts.filters.keys():
         if key in available_filters:
             molecules = available_filters[key](molecules, opts)
+            if molecules.empty:
+                print("There no more molecules to perform the filter!")
+                sys.exit()
 
     columns = [x for x in ("smiles", 'scscore', 'bulkiness') if x in molecules.columns]
     molecules.to_csv(output_file, columns=columns)
