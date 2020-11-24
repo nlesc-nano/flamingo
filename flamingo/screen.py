@@ -58,9 +58,9 @@ def split_filter_in_batches(opts: Options) -> None:
         except RuntimeError as err:
             print("Error applying filter:\n", err)
             raise
-        except:
+        except Exception as ex:
             error, msg, _ = sys.exc_info()
-            logger.error(f"Error processing batch: {k}\n{error} {msg}")
+            logger.error(f"Error processing batch: {k}\n{error} {msg}", exc_info=ex)
 
 
 def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> None:
