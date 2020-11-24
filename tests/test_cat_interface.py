@@ -18,7 +18,9 @@ def create_options(tmp_path: Path) -> Dict[str, Any]:
     return {
         "workdir": tmp_path,
         "core": PATH_TEST / "Cd68Se55.xyz",
-        "anchor": "O(C=O)[H]"}
+        "anchor": "O(C=O)[H]",
+        "filters": { "bulkiness": {"h_lim": 10, "d": "auto"}}
+        }
 
 
 def test_compute_bulkiness(tmp_path: Path):

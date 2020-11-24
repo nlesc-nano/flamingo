@@ -3,7 +3,7 @@
 import argparse
 import shutil
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Set
 
 import pandas as pd
 import pytest
@@ -22,13 +22,13 @@ PATH_INPUT_TEST_FILTER = PATH_TEST / "input_test_filter.yml"
 def run_workflow(opts: Options) -> pd.DataFrame:
     """Apply the filters and read the output."""
     split_filter_in_batches(opts)
-    path = "results/batch_0/candidates.csv"
+    path = Path("results/batch_0/candidates.csv")
     filter_mols = read_molecules(path)
     print("Result path: ", path)
     return filter_mols
 
 
-def create_options(filters: Mapping[str, Any], smiles_file: str, tmp_path: str) -> Options:
+def create_options(filters: Mapping[str, Any], smiles_file: str, tmp_path: Path) -> Options:
     """Create Options object to filter."""
     opts = Options()
     opts.smiles_file = (PATH_TEST / smiles_file).absolute().as_posix()
@@ -47,7 +47,7 @@ def remove_output(output_path: str) -> None:
         shutil.rmtree(path)
 
 
-def check_expected(opts: Options, expected: Iterable[str]) -> None:
+def check_expected(opts: Options, expected: Set[str]) -> None:
     """Run a filter workflow using `opts` and check the results."""
     try:
         computed = run_workflow(opts)
@@ -92,9 +92,9 @@ def test_contain_functional_groups(tmp_path: Path) -> None:
     smiles_file = "smiles_functional_groups.csv"
     filters = {"include_functional_groups": ["C(=O)O"]}
     opts = create_options(filters, smiles_file, tmp_path)
-    expected = ("O=C(O)C1CNC2C3CC4C2N4C13", "C#CC12CC(CO1)NCC2C(=O)O",
+    expected = {"O=C(O)C1CNC2C3CC4C2N4C13", "C#CC12CC(CO1)NCC2C(=O)O",
                 "CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O",
-                "O=C(O)Cc1ccccc1", "CC(O)C(=O)O")
+                "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"}
     check_expected(opts, expected)
 
 
@@ -104,31 +104,31 @@ def test_exclude_functional_groups(tmp_path: Path) -> None:
     smiles_file = "smiles_functional_groups.csv"
     filters = {"exclude_functional_groups": ["CN", "C#C"]}
     opts = create_options(filters, smiles_file, tmp_path)
-    expected = ("c1ccccc1", "CCO", "CCCCCCCCC=CCCCCCCCC(=O)O",
-                "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O")
+    expected = {"c1ccccc1", "CCO", "CCCCCCCCC=CCCCCCCCC(=O)O",
+                "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"}
     check_expected(opts, expected)
 
 
 def test_filter_bulkiness(tmp_path: Path) -> None:
     """Test that the bulkiness filter is applied properly."""
     smiles_file = "smiles_carboxylic.csv"
-    filters = {"bulkiness": {"lower_than": 20}}
+    filters = {"bulkiness": {"h_lim": None, "d": "auto", "lower_than": 20}}
     opts = create_options(filters, smiles_file, tmp_path)
     opts.core = PATH_TEST / "Cd68Se55.xyz"
     opts.anchor = "O(C=O)[H]"
 
-    expected = ("CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "CC(O)C(=O)O")
+    expected = {"CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "CC(O)C(=O)O"}
     check_expected(opts, expected)
 
 
 def test_filter_bulkiness_no_core(tmp_path: Path) -> None:
     """Test that the bulkiness filter is applied properly."""
     smiles_file = "smiles_carboxylic.csv"
-    filters = {"bulkiness": {"lower_than": 20}}
+    filters = {"bulkiness": {"h_lim": None, "d": "auto", "lower_than": 20}}
     opts = create_options(filters, smiles_file, tmp_path)
     opts.anchor = "O(C=O)[H]"
 
-    expected = []
+    expected = set()  # type: Set[str]
     with pytest.raises(RuntimeError) as err:
         check_expected(opts, expected)
 

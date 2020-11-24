@@ -16,7 +16,7 @@ Compute and filter molecular properties. See `documentation <https://flamingo-mo
 Installation
 ============
 
-- Download miniconda for python3: miniconda_ (also you can install the complete anaconda_ version).
+- Download miniconda for python3: miniconda_.
 
 - Install according to: installConda_.
 
@@ -92,3 +92,4 @@ This package was created with `Cookiecutter <https://github.com/audreyr/cookiecu
 .. _installConda: https://conda.io/projects/conda/en/latest/user-guide/install/index.html
 .. _RDKit: https://www.rdkit.org
 .. _H5PY: https://www.h5py.org/
+.. _miniconda: https://docs.conda.io/en/latest/miniconda.html

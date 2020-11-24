@@ -175,15 +175,16 @@ def apply_predicate(molecules: pd.DataFrame, feature: str, opts: Options) -> pd.
 
     # Check if the molecules fulfill the bulkiness predicate
     property_info = opts.filters[feature]
-    predicate_type = next(iter(property_info.keys()))
-    limit = property_info[predicate_type]
+    keywords = property_info.keys()
 
-    if predicate_type == "lower_than":
+    predicate = "lower_than" if "lower_than" in keywords else "greater_than"
+    limit = property_info[predicate]
+    if predicate == "lower_than":
         has_pattern = molecules[feature] <= limit
-    elif predicate_type == "greater_than":
+    else:
         has_pattern = molecules[feature] >= limit
 
-    logger.info(f"Keep molecules that have {feature} {predicate_type} {limit}")
+    logger.info(f"Keep molecules that have {feature} {predicate} {limit}")
 
     return molecules[has_pattern]
 

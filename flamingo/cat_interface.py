@@ -11,7 +11,7 @@ from contextlib import redirect_stderr
 from functools import partial
 from multiprocessing import Pool
 from pathlib import Path
-from typing import Any, Callable, DefaultDict, List, Mapping, NamedTuple, Union
+from typing import Any, Callable, Dict, List, Mapping, NamedTuple, Union
 
 import h5py
 import numpy as np
@@ -46,7 +46,7 @@ class PropertyMetadata(NamedTuple):
     dset: str  # Dset in the HDF5
 
 
-def call_cat(smiles: pd.Series, opts: Mapping[str, Any], cat_properties: DefaultDict[str, bool],
+def call_cat(smiles: pd.Series, opts: Mapping[str, Any], cat_properties: Dict[str, Any],
              chunk_name: str = "0") -> Path:
     """Call cat with a given `config` and returns a dataframe with the results.
 
@@ -91,12 +91,15 @@ input_ligands:
 
 optional:
     qd:
-       bulkiness: {cat_properties['bulkiness']}
+       {generate_bulkiness_section(cat_properties)}
     ligand:
-       cosmo-rs: {cat_properties['cosmo-rs']}
+       {generate_cosmo_section(cat_properties)}
        functional_groups:
           ['{opts["anchor"]}']
 """, Loader=yaml.FullLoader)
+
+    with open(path_workdir_cat / "cat_input.yml", 'w') as handler:
+        yaml.dump(input_cat, handler)
 
     inp = Settings(input_cat)
     with open("cat_output.log", 'a') as f:
@@ -111,13 +114,32 @@ optional:
         return path_hdf5
 
 
+def generate_bulkiness_section(cat_properties: Dict[str, Any]) -> str:
+    """Generate the CAT bulkiness input section."""
+    if "bulkiness" not in cat_properties:
+        return "bulkiness: False"
+    bulkiness = cat_properties['bulkiness']
+    string = "bulkiness:\n"
+    for key in {"h_lim", "d"}:
+        if bulkiness[key] is not None:
+            string += f"{' ':>10}{key}: {bulkiness[key]}\n"
+    return string
+
+
+def generate_cosmo_section(cat_properties: Dict[str, Any]) -> str:
+    """Generate the CAT cosmo-rs input section."""
+    if "cosmo-rs" in cat_properties:
+        return "cosmo-rs: True"
+    else:
+        return "cosmo-rs: False"
+
+
 def compute_property_using_cat(
         smiles: pd.Series, opts: Mapping[str, Any],
         chunk_name: str, metadata: PropertyMetadata) -> pd.Series:
     """Compute the bulkiness for the candidates."""
     # Properties to compute using cat
-    cat_properties = defaultdict(bool)
-    cat_properties[metadata.name] = True
+    cat_properties = opts['filters']
 
     # run cat
     path_hdf5 = call_cat(smiles, opts, cat_properties, chunk_name=chunk_name)
