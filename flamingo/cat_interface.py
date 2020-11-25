@@ -116,13 +116,14 @@ optional:
 
 def generate_bulkiness_section(cat_properties: Dict[str, Any]) -> str:
     """Generate the CAT bulkiness input section."""
+    def replace_None(x):
+        return "NULL" if x is None else x
     if "bulkiness" not in cat_properties:
         return "bulkiness: False"
     bulkiness = cat_properties['bulkiness']
     string = "bulkiness:\n"
     for key in {"h_lim", "d"}:
-        if bulkiness[key] is not None:
-            string += f"{' ':>10}{key}: {bulkiness[key]}\n"
+        string += f"{' ':>10}{key}: {replace_None(bulkiness[key])}\n"
     return string
 
 
