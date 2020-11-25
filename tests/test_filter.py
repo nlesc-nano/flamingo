@@ -117,7 +117,7 @@ def test_filter_bulkiness(tmp_path: Path) -> None:
     opts.core = PATH_TEST / "Cd68Se55.xyz"
     opts.anchor = "O(C=O)[H]"
 
-    expected = {"CC(=O)O", "CC(O)C(=O)O"}
+    expected = {"CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "CC(O)C(=O)O"}
     check_expected(opts, expected)
 
 
