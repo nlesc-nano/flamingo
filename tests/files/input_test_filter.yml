@@ -9,7 +9,7 @@ anchor:
 
 filters:
   include_functional_groups:
-    - "C(=O)O"
+    - "C(=O)O[H]"
   scscore:
     lower_than:
       2.0
