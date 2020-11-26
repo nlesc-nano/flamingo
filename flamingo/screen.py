@@ -13,7 +13,7 @@ import logging
 import sys
 from functools import partial
 from pathlib import Path
-from typing import FrozenSet
+from typing import FrozenSet, Optional
 
 import numpy as np
 import pandas as pd
@@ -77,7 +77,7 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
     """
     logger.info("converting smiles to rdkit molecules")
     # Create rdkit representations
-    converter = np.vectorize(Chem.MolFromSmiles)
+    converter = np.vectorize(read_smile_and_sanitize)
     molecules["rdkit_molecules"] = converter(molecules.smiles)
 
     # Remove invalid molecules
@@ -125,23 +125,22 @@ def filter_by_functional_group(molecules: pd.DataFrame, opts: Options, key: str,
     """Search for a set of functional_groups."""
     # Transform functional_groups to rkdit molecules
     functional_groups = opts["filters"][key]
-    patterns = {Chem.MolFromSmiles(f) for f in functional_groups}
+    patterns = {Chem.MolFromSmarts(f) for f in functional_groups}
 
     # Function to apply predicate
-    pattern_check = np.vectorize(partial(has_substructure, exclude, patterns))
+    pattern_check = np.vectorize(partial(has_substructure, patterns))
 
     # Check if the functional_groups are in the molecules
     has_pattern = pattern_check(molecules["rdkit_molecules"])
+    if exclude:
+        has_pattern = ~has_pattern
 
     return molecules[has_pattern]
 
 
-def has_substructure(exclude: bool, patterns: FrozenSet, mol: Chem.Mol) -> bool:
+def has_substructure(patterns: FrozenSet, mol: Chem.Mol) -> bool:
     """Check if there is any element of `pattern` in `mol`."""
-    result = False if mol is None else any(mol.HasSubstructMatch(p) for p in patterns)
-    if exclude:
-        return not result
-    return result
+    return False if mol is None else any(mol.HasSubstructMatch(p) for p in patterns)
 
 
 def filter_by_bulkiness(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
@@ -198,6 +197,17 @@ def create_ouput_file(result_path: Path, k: int) -> Path:
     parent.mkdir(exist_ok=True)
     return parent / "candidates.csv"
 
+
+def read_smile_and_sanitize(smile: str) -> Optional[Chem.rdchem.Mol]:
+    """Try to read and sanitize a given smile"""
+    sanitize = Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_ADJUSTHS
+    try:
+        mol = Chem.MolFromSmiles(smile)
+        Chem.rdmolops.SanitizeMol(mol, sanitizeOps=sanitize)
+    except:
+        mol = None
+    return mol
+    
 
 def main():
     """Parse the command line arguments to screen smiles."""

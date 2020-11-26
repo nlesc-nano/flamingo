@@ -90,7 +90,7 @@ def test_invalid_input(mocker: MockFixture, tmp_path: Path):
 def test_contain_functional_groups(tmp_path: Path) -> None:
     """Test that the functional group filter is applied properly."""
     smiles_file = "smiles_functional_groups.csv"
-    filters = {"include_functional_groups": ["C(=O)O"]}
+    filters = {"include_functional_groups": ["[CX3](=O)[OX2H1]"]}
     opts = create_options(filters, smiles_file, tmp_path)
     expected = {"O=C(O)C1CNC2C3CC4C2N4C13", "C#CC12CC(CO1)NCC2C(=O)O",
                 "CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O",
@@ -102,7 +102,8 @@ def test_exclude_functional_groups(tmp_path: Path) -> None:
     """Test that some functional groups are excluded correctly."""
 
     smiles_file = "smiles_functional_groups.csv"
-    filters = {"exclude_functional_groups": ["CN", "C#C"]}
+    filters = {"exclude_functional_groups": [
+        "[#7][#6](=[OX1])", "C#C", "[#6](=[OX1])[OX2][#6]", "[NX3]"]}
     opts = create_options(filters, smiles_file, tmp_path)
     expected = {"c1ccccc1", "CCO", "CCCCCCCCC=CCCCCCCCC(=O)O",
                 "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"}
