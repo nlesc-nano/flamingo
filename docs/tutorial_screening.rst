@@ -54,15 +54,15 @@ file following the subsequent schema yaml_::
     
  filters:
    include_functional_groups:
-     - "C(=O)O[H]"
+     - "[CX3](=O)[OX2H1]" # Include carboxylic acids
    exclude_functional_groups:
-     - "S(=O)(=O)"
+     - "[NX3]"  # Exclude tertiary amines
+     - "C#C"    # Exclude triplet Carbon-Carbon bonds
    scscore:
      lower_than:
        3.0
    bulkiness:
      h_lim: 10
-     d: "auto"
      lower_than: 200
 
 
@@ -80,8 +80,9 @@ Available filters
 1. Include and exclude function groups
 --------------------------------------
 The *include_functional_groups* and *exclude_functional_groups* as their names suggest
-keep and drop molecules based on a list of functional groups. Notice the functional
-are also provided as smiles_.
+keep and drop molecules based on a list of functional groups represented as
+`SMARTS <https://en.wikipedia.org/wiki/SMILES_arbitrary_target_specification>`_.
+
 
 2. Synthesizability scores
 --------------------------
