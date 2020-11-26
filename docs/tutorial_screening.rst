@@ -54,7 +54,7 @@ file following the subsequent schema yaml_::
     
  filters:
    include_functional_groups:
-     - "C(=O)O"
+     - "C(=O)O[H]"
    exclude_functional_groups:
      - "S(=O)(=O)"
    scscore:
