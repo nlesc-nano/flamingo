@@ -25,8 +25,7 @@ SCHEMA_ORDERING = Or(
 #: https://cat.readthedocs.io/en/latest/4_optional.html#optional.qd.bulkiness
 SCHEMA_BULKINESS = Schema({
     "lower_than": Real,
-    Optional("h_lim", default=10): Or(Real, None),
-    Optional("d", default="auto"): Or(str, Real, None)})
+    Optional("h_lim", default=10): Or(Real, None)})
 
 #: Schema to validate the filters to apply for screening
 SCHEMA_FILTERS = Schema({
