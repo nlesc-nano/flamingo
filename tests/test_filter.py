@@ -113,7 +113,7 @@ def test_exclude_functional_groups(tmp_path: Path) -> None:
 def test_filter_bulkiness(tmp_path: Path) -> None:
     """Test that the bulkiness filter is applied properly."""
     smiles_file = "smiles_carboxylic.csv"
-    filters = {"bulkiness": {"h_lim": None, "lower_than": 30}}
+    filters = {"bulkiness": {"h_lim": None, "d": "auto", "lower_than": 20}}
     opts = create_options(filters, smiles_file, tmp_path)
     opts.core = PATH_TEST / "Cd68Se55.xyz"
     opts.anchor = "O(C=O)[H]"
