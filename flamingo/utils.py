@@ -86,4 +86,7 @@ def read_molecules(input_file: Path) -> pd.DataFrame:
 def normalize_smiles(smile: str) -> str:
     """Write a smile in its normal form."""
     mol = Chem.MolFromSmiles(smile)
-    return Chem.MolToSmiles(mol)
+    if mol is not None:
+        return Chem.MolToSmiles(mol)
+    else:
+        return smile
