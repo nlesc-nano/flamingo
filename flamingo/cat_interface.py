@@ -83,7 +83,7 @@ def call_cat(smiles: pd.Series, opts: Mapping[str, Any], cat_properties: Dict[st
 path: {path_workdir_cat.absolute().as_posix()}
 
 input_cores:
-    - {opts['core']}:
+    - {Path(opts['core']).absolute().as_posix()}:
         guess_bonds: False
 
 input_ligands:
