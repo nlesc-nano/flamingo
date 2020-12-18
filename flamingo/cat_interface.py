@@ -96,6 +96,8 @@ optional:
        {generate_cosmo_section(cat_properties)}
        functional_groups:
           ['{opts["anchor"]}']
+    database:
+        thread_safe: True
 """, Loader=yaml.FullLoader)
 
     with open(path_workdir_cat / "cat_input.yml", 'w') as handler:
