@@ -20,7 +20,6 @@ import yaml
 from CAT.base import prep
 from dataCAT import prop_to_dataframe
 from more_itertools import chunked
-from retry import retry
 from scm.plams import Settings
 
 from .utils import Options, normalize_smiles
@@ -47,7 +46,6 @@ class PropertyMetadata(NamedTuple):
     dset: str  # Dset in the HDF5
 
 
-@retry(FileExistsError, delay=1, tries=100)
 def call_cat(smiles: pd.Series, opts: Mapping[str, Any], cat_properties: Dict[str, Any],
              chunk_name: str = "0") -> Path:
     """Call cat with a given `config` and returns a dataframe with the results.
@@ -98,6 +96,8 @@ optional:
        {generate_cosmo_section(cat_properties)}
        functional_groups:
           ['{opts["anchor"]}']
+    database:
+        thread_safe: True
 """, Loader=yaml.FullLoader)
 
     with open(path_workdir_cat / "cat_input.yml", 'w') as handler:
