@@ -75,7 +75,7 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
     output_file
         :class:`pathlib.Path`
     """
-    logger.info("converting smiles to rdkit molecules")
+    logger.debug("converting smiles to rdkit molecules")
     # Create rdkit representations
     converter = np.vectorize(read_smile_and_sanitize)
     molecules["rdkit_molecules"] = converter(molecules.smiles)
@@ -98,25 +98,24 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
         if key in available_filters:
             molecules = available_filters[key](molecules, opts)
             if molecules.empty:
-                print("There no more molecules to perform the filter!")
-                sys.exit()
+                print("There no more molecules to perform the filter in the batch!")
 
     columns = [x for x in ("smiles", 'scscore', 'bulkiness') if x in molecules.columns]
     molecules.to_csv(output_file, columns=columns)
-    logger.info(f"The filtered candidates has been written to the {output_file} file!")
+    logger.debug(f"The filtered candidates has been written to the {output_file} file!")
 
 
 def include_functional_groups(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
     """Check that the molecules contain some functional groups."""
     groups = opts["filters"]["include_functional_groups"]
-    logger.info(f"including molecules that contains the groups: {groups}")
+    logger.debug(f"including molecules that contains the groups: {groups}")
     return filter_by_functional_group(molecules, opts, "include_functional_groups", False)
 
 
 def exclude_functional_groups(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
     """Check that the molecules do not contain some functional groups."""
     groups = opts["filters"]["exclude_functional_groups"]
-    logger.info(f"exclude molecules that contains the groups: {groups}")
+    logger.debug(f"exclude molecules that contains the groups: {groups}")
     return filter_by_functional_group(molecules, opts, "exclude_functional_groups", True)
 
 
@@ -157,7 +156,6 @@ def filter_by_bulkiness(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
     opts.bulkiness = True
     molecules["bulkiness"] = compute_bulkiness(molecules.smiles, opts)
     logger.debug("CAT has been called!")
-
     return apply_predicate(molecules, "bulkiness", opts)
 
 
@@ -207,7 +205,15 @@ def read_smile_and_sanitize(smile: str) -> Optional[Chem.rdchem.Mol]:
     except:
         mol = None
     return mol
-    
+
+
+def merge_result():
+    """Merge all the results file into a single one in the CWD."""
+    files = [pd.read_csv(p,index_col=0) for p in Path("results").glob("batch_*/candidates.csv")]
+    if files:
+        results = pd.concat(files)
+        results.to_csv("FinalResults.csv", index=False)
+
 
 def main():
     """Parse the command line arguments to screen smiles."""
@@ -222,3 +228,4 @@ def main():
     # parse command line options and run workflow
     options = validate_input(args.i, action="screen")
     split_filter_in_batches(options)
+    merge_result()
