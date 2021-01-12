@@ -50,9 +50,9 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     install_requires=[
-        'CAT@git+https://github.com/nlesc-nano/CAT',
+        'CAT@git+https://github.com/nlesc-nano/CAT@master',
         'nano-CAT@git+https://github.com/nlesc-nano/nano-CAT@master',
-        'data-CAT@git+https://github.com/nlesc-nano/data-CAT',
+        'data-CAT@git+https://github.com/nlesc-nano/data-CAT@master',
         'mendeleev', 'more_itertools', 'numpy', 'pandas',
         'pyyaml>=5.1.1', 'schema', 'typing_extensions'],
     entry_points={
