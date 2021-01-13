@@ -18,8 +18,7 @@ from schema import Optional, Or, Schema, SchemaError
 from .utils import Options
 
 # Number of Cores to use
-CORES = cpu_count()
-THREADS =  CORES // 2 if CORES > 1 else 1
+THREADS = cpu_count()
 
 #: Schema to validate the ordering keywords
 SCHEMA_ORDERING = Or(
