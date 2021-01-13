@@ -8,13 +8,18 @@
     :annotation: : schema.Schema
 
 """
-from numbers import Real
 import tempfile
-from schema import Optional, Or, Schema, SchemaError
+from multiprocessing import cpu_count
+from numbers import Real
 
 import yaml
+from schema import Optional, Or, Schema, SchemaError
 
 from .utils import Options
+
+# Number of Cores to use
+CORES = cpu_count()
+THREADS =  CORES // 2 if CORES > 1 else 1
 
 #: Schema to validate the ordering keywords
 SCHEMA_ORDERING = Or(
@@ -61,7 +66,10 @@ SCHEMA_SCREEN = Schema({
     Optional("batch_size", default=1000): int,
 
     # File to print the final candidates
-    Optional("output_path", default="results"): str
+    Optional("output_path", default="results"): str,
+
+    # Number of Cpus cores to use
+    Optional("nthreads", default=THREADS): int
 })
 
 DICT_ACTIONS = {"screen": SCHEMA_SCREEN}
