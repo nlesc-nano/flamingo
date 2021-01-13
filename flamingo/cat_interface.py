@@ -211,8 +211,8 @@ def map_reduce(smiles: pd.Series, opts: Options,
     """Distribute the properties computation in batches."""
     worker = partial(callback, smiles, opts.to_dict())
 
-    with Pool() as p:
-        results = p.map(worker, chunked(smiles.index, 10))
+    with Pool(opts.nthreads) as p:
+        results = list(p.imap(worker, chunked(smiles.index, 10), opts.batch_size))
 
     return reduce(results)
 
