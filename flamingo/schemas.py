@@ -9,7 +9,6 @@
 
 """
 import tempfile
-from multiprocessing import cpu_count
 from numbers import Real
 
 import yaml
@@ -17,8 +16,6 @@ from schema import Optional, Or, Schema, SchemaError
 
 from .utils import Options
 
-# Number of Cores to use
-THREADS = cpu_count()
 
 #: Schema to validate the ordering keywords
 SCHEMA_ORDERING = Or(
@@ -61,14 +58,8 @@ SCHEMA_SCREEN = Schema({
     # path to the workdir
     Optional("workdir", default=tempfile.mkdtemp(prefix="flamingo_workdir_")): str,
 
-    # Number of molecules to compute simultaneously
-    Optional("batch_size", default=1000): int,
-
     # File to print the final candidates
     Optional("output_path", default="results"): str,
-
-    # Number of Cpus cores to use
-    Optional("nthreads", default=THREADS): int
 })
 
 DICT_ACTIONS = {"screen": SCHEMA_SCREEN}

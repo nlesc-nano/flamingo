@@ -45,12 +45,13 @@ def split_filter_in_batches(opts: Options) -> None:
     result_path = Path(opts.output_path)
     result_path.mkdir(exist_ok=True, parents=True)
 
-    # Compute the number of batches and split
-    nsmiles = len(molecules)
-    number_of_batches = nsmiles // opts.batch_size
-    number_of_batches = number_of_batches if number_of_batches > 0 else 1
 
-    for k, batch in enumerate(np.array_split(molecules, number_of_batches)):
+    # Compute the number of batches to split
+    nbatches = len(molecules) // 1000
+    nbatches = nbatches if nbatches > 0 else 1
+
+
+    for k, batch in enumerate(np.array_split(molecules, nbatches)):
         logger.info(f"computing batch: {k}")
         output_file = create_ouput_file(result_path, k)
         try:
