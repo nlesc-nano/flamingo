@@ -6,12 +6,14 @@ API
 .. autofunction:: compute_bulkiness
 """
 import logging
+import shutil
+import uuid
 from collections import defaultdict
 from contextlib import redirect_stderr
 from functools import partial
 from multiprocessing import Pool
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Mapping, NamedTuple, Union
+from typing import Any, Callable, Dict, List, Mapping, NamedTuple, Tuple, Union
 
 import h5py
 import numpy as np
@@ -46,8 +48,7 @@ class PropertyMetadata(NamedTuple):
     dset: str  # Dset in the HDF5
 
 
-def call_cat(smiles: pd.Series, opts: Mapping[str, Any], cat_properties: Dict[str, Any],
-             chunk_name: str = "0") -> Path:
+def call_cat(smiles: pd.Series, opts: Mapping[str, Any], cat_properties: Dict[str, Any]) -> Tuple[Path, Path]:
     """Call cat with a given `config` and returns a dataframe with the results.
 
     Parameters
@@ -71,6 +72,7 @@ def call_cat(smiles: pd.Series, opts: Mapping[str, Any], cat_properties: Dict[st
         If the Cat calculation fails
     """
     # create workdir for cat
+    chunk_name = uuid.uuid1().hex
     path_workdir_cat = Path(opts["workdir"]) / "cat_workdir" / chunk_name
     path_workdir_cat.mkdir(parents=True, exist_ok=True)
 
@@ -113,7 +115,7 @@ optional:
     if not path_hdf5.exists():
         raise RuntimeError(f"There is not hdf5 file at:{path_hdf5}")
     else:
-        return path_hdf5
+        return path_hdf5, path_workdir_cat
 
 
 def generate_bulkiness_section(cat_properties: Dict[str, Any]) -> str:
@@ -138,17 +140,19 @@ def generate_cosmo_section(cat_properties: Dict[str, Any]) -> str:
 
 
 def compute_property_using_cat(
-        smiles: pd.Series, opts: Mapping[str, Any],
-        chunk_name: str, metadata: PropertyMetadata) -> pd.Series:
+        smiles: pd.Series, opts: Mapping[str, Any], metadata: PropertyMetadata) -> pd.Series:
     """Compute the bulkiness for the candidates."""
     # Properties to compute using cat
     cat_properties = opts['filters']
 
     # run cat
-    path_hdf5 = call_cat(smiles, opts, cat_properties, chunk_name=chunk_name)
+    path_hdf5, path_workdir_cat = call_cat(smiles, opts, cat_properties)
 
-    return extract_dataframe_from_hdf5(path_hdf5, metadata)
+    df = extract_dataframe_from_hdf5(path_hdf5, metadata)
+    if path_workdir_cat.exists():
+        shutil.rmtree(path_workdir_cat)
 
+    return df
 
 def extract_dataframe_from_hdf5(path_hdf5: Path, metadata: PropertyMetadata) -> pd.DataFrame:
     """Get a Dataframe from the CAT HDF5 results."""
@@ -174,19 +178,18 @@ def compute_batch_bulkiness(
         smiles: pd.Series, opts: Mapping[str, Any], indices: pd.Index) -> pd.Series:
     """Compute bulkiness using CAT."""
     chunk = smiles[indices]
-    chunk_name = str(indices[0])
 
     # Transform the smiles to normal representation
     chunk = chunk.apply(normalize_smiles)
 
     # compute and extract the bulkiness
     metadata = PropertyMetadata("bulkiness", 'qd/properties/V_bulk')
-    df = compute_property_using_cat(chunk, opts, chunk_name, metadata)
+    df = compute_property_using_cat(chunk, opts, metadata)
 
     bulkiness = pd.merge(chunk, df, left_on="smiles", right_on="ligand")["V_bulk"]
     if len(indices) != len(bulkiness):
         msg = "There is an incongruence in the bulkiness computed by CAT!"
-        logger.error(f"There was an error processing chunk: {chunk_name}\n{msg}")
+        logger.error(f"There was an error processing chunk:\n{msg}")
         values = np.repeat(np.nan, len(indices))
     else:
         values = bulkiness.to_numpy()
@@ -211,8 +214,8 @@ def map_reduce(smiles: pd.Series, opts: Options,
     """Distribute the properties computation in batches."""
     worker = partial(callback, smiles, opts.to_dict())
 
-    with Pool(opts.nthreads) as p:
-        results = list(p.imap(worker, chunked(smiles.index, 10), opts.batch_size))
+    with Pool() as p:
+        results = list(p.imap_unordered(worker, chunked(smiles.index, 10), 10))
 
     return reduce(results)
 
