@@ -215,7 +215,7 @@ def map_reduce(smiles: pd.Series, opts: Options,
     worker = partial(callback, smiles, opts.to_dict())
 
     with Pool() as p:
-        results = list(p.imap_unordered(worker, chunked(smiles.index, 10), 10))
+        results = list(p.imap_unordered(worker, chunked(smiles.index, 10), 1))
 
     return reduce(results)
 
