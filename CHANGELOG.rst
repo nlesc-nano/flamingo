@@ -5,8 +5,16 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
-0.2.1 [Unreleased]
+0.2.2 [Unreleased]
 ******************
+
+0.2.1 [14/01/2021]
+******************
+Change
+-----
+* Use all the available CPU to compute bulkiness with CAT by calling the `imap_unordered Pool's method <https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.imap_unordered>`_.
+* Remove the `batch_size` input parameter and fix it to 1000.
+  
 
 0.2.0 [03/11/2020]
 ******************
