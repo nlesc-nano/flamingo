@@ -50,18 +50,23 @@ def split_filter_in_batches(opts: Options) -> None:
     nbatches = len(molecules) // 1000
     nbatches = nbatches if nbatches > 0 else 1
 
+    # Check precomputed batches
+    computed_batches = search_for_computed_batches()
 
     for k, batch in enumerate(np.array_split(molecules, nbatches)):
-        logger.info(f"computing batch: {k}")
-        output_file = create_ouput_file(result_path, k)
-        try:
-            apply_filters(batch, opts, output_file)
-        except RuntimeError as err:
-            print("Error applying filter:\n", err)
-            raise
-        except Exception as ex:
-            error, msg, _ = sys.exc_info()
-            logger.error(f"Error processing batch: {k}\n{error} {msg}", exc_info=ex)
+        if k < computed_batches:
+            logger.info(f"Batch {k} has already been computed, skipping it")
+        else :
+            logger.info(f"computing batch: {k}")
+            output_file = create_ouput_file(result_path, k)
+            try:
+                apply_filters(batch, opts, output_file)
+            except RuntimeError as err:
+                print("Error applying filter:\n", err)
+                raise
+            except Exception as ex:
+                error, msg, _ = sys.exc_info()
+                logger.error(f"Error processing batch: {k}\n{error} {msg}", exc_info=ex)
 
 
 def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> None:
@@ -215,6 +220,14 @@ def merge_result():
         results = pd.concat(files)
         results.to_csv("FinalResults.csv", index=False)
 
+def search_for_computed_batches():
+    """Check for batches that have been already computed."""
+    path = Path("results")
+    if path.exists():
+        computed = len(set(path.glob("batch_*")))
+        return computed - 1 if computed > 0 else 0
+    else:
+        return 0
 
 def main():
     """Parse the command line arguments to screen smiles."""
