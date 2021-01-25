@@ -51,7 +51,7 @@ def split_filter_in_batches(opts: Options) -> None:
     nbatches = nbatches if nbatches > 0 else 1
 
     # Check precomputed batches
-    computed_batches = search_for_computed_batches()
+    computed_batches = search_for_computed_batches(opts.output_path)
 
     for k, batch in enumerate(np.array_split(molecules, nbatches)):
         if k < computed_batches:
@@ -77,7 +77,7 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
     molecules
         :class:`pandas.Dataframe` with the molecular data.
     opts
-        :class:`swan.utils.Options` options to run the filtering
+        :class:`flamingo.utils.Options` options to run the filtering
     output_file
         :class:`pathlib.Path`
     """
@@ -220,9 +220,9 @@ def merge_result():
         results = pd.concat(files)
         results.to_csv("FinalResults.csv", index=False)
 
-def search_for_computed_batches():
+def search_for_computed_batches(output_path: Path) -> int:
     """Check for batches that have been already computed."""
-    path = Path("results")
+    path = Path(output_path)
     if path.exists():
         computed = len(set(path.glob("batch_*")))
         return computed - 1 if computed > 0 else 0
@@ -231,7 +231,7 @@ def search_for_computed_batches():
 
 def main():
     """Parse the command line arguments to screen smiles."""
-    parser = argparse.ArgumentParser(description="modeller -i input.yml")
+    parser = argparse.ArgumentParser("smiles_screener")
     # configure logger
     parser.add_argument('-i', required=True,
                         help="Input file with options")
