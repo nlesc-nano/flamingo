@@ -1,0 +1,15 @@
+smiles_file:
+  data.csv
+core:
+   "Cd68Se55.xyz"
+anchor:
+   "O(C=O)[H]"
+
+filters:
+  include_functional_groups:
+    -  "[CX3](=O)[OX2H1]"
+  scscore:
+    lower_than:
+      3.0
+  bulkiness:
+    lower_than: 30
