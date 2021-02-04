@@ -65,6 +65,9 @@ SCHEMA_SCREEN = Schema({
 
     # File to print the final candidates
     Optional("output_path", default="results"): str,
+
+    # Number of molecules per batch
+    Optional("batch_size", default=1000): int
 })
 
 DICT_ACTIONS = {"screen": SCHEMA_SCREEN}
