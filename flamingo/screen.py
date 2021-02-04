@@ -47,7 +47,7 @@ def split_filter_in_batches(opts: Options) -> None:
     result_path.mkdir(exist_ok=True, parents=True)
 
     # Compute the number of batches to split
-    nbatches = len(molecules) // 1000
+    nbatches = len(molecules) // opts.batch_size
     nbatches = nbatches if nbatches > 0 else 1
 
     # Check precomputed batches
