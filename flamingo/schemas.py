@@ -31,6 +31,9 @@ SCHEMA_BULKINESS = Schema({
 
 #: Schema to validate the filters to apply for screening
 SCHEMA_FILTERS = Schema({
+    # Filter out molecules with more a given anchor
+    Optional("single_anchor", default=True): bool,
+
     # Include or exclude one or more functional group using smiles
     Optional("include_functional_groups"): Schema([str]),
     Optional("exclude_functional_groups"): Schema([str]),
@@ -39,6 +42,7 @@ SCHEMA_FILTERS = Schema({
     Optional("bulkiness"): SCHEMA_BULKINESS,
 
     Optional("scscore"): SCHEMA_ORDERING
+
 })
 
 #: Schema to validate the input for screening
@@ -51,6 +55,7 @@ SCHEMA_SCREEN = Schema({
 
     # Functional group used as anchor
     Optional("anchor", default="O(C=O)[H]"): str,
+
 
     # path to the molecular coordinates of the Core to attach the ligands
     Optional("core"): str,

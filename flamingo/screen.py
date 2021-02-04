@@ -18,6 +18,7 @@ from typing import FrozenSet, Optional
 import numpy as np
 import pandas as pd
 from rdkit import Chem
+from rdkit.Chem import Fragments
 
 from .features.featurizer import generate_fingerprints
 from .cat_interface import compute_bulkiness
@@ -45,13 +46,12 @@ def split_filter_in_batches(opts: Options) -> None:
     result_path = Path(opts.output_path)
     result_path.mkdir(exist_ok=True, parents=True)
 
-
     # Compute the number of batches to split
     nbatches = len(molecules) // 1000
     nbatches = nbatches if nbatches > 0 else 1
 
     # Check precomputed batches
-    computed_batches = search_for_computed_batches()
+    computed_batches = search_for_computed_batches(opts.output_path)
 
     for k, batch in enumerate(np.array_split(molecules, nbatches)):
         if k < computed_batches:
@@ -77,7 +77,7 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
     molecules
         :class:`pandas.Dataframe` with the molecular data.
     opts
-        :class:`swan.utils.Options` options to run the filtering
+        :class:`flamingo.utils.Options` options to run the filtering
     output_file
         :class:`pathlib.Path`
     """
@@ -98,7 +98,9 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
         "include_functional_groups": include_functional_groups,
         "exclude_functional_groups": exclude_functional_groups,
         "bulkiness": filter_by_bulkiness,
-        "scscore": filter_by_scscore}
+        "scscore": filter_by_scscore,
+        "single_anchor": filter_single_anchor,
+        }
 
     for key in opts.filters.keys():
         if key in available_filters:
@@ -146,6 +148,20 @@ def filter_by_functional_group(molecules: pd.DataFrame, opts: Options, key: str,
 def has_substructure(patterns: FrozenSet, mol: Chem.Mol) -> bool:
     """Check if there is any element of `pattern` in `mol`."""
     return False if mol is None else any(mol.HasSubstructMatch(p) for p in patterns)
+
+
+def filter_single_anchor(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
+    """Exclude molecules that containing more that a single functional group used as anchor."""
+    logger.debug(f"exclude molecules with more than a single {opts.anchor} anchoring group")
+    anchor = Chem.MolFromSmiles(opts.anchor)
+    if anchor.HasSubstructMatch(Chem.MolFromSmarts("[OH]C=O")):
+        fun_fragment = np.vectorize(Fragments.fr_COO)
+    else:
+        msg = f"single_anchor_filter not implemented for anchor: {opts.anchor}"
+        raise NotImplementedError(msg)
+
+    singles = fun_fragment(molecules["rdkit_molecules"])
+    return molecules[singles == 1]
 
 
 def filter_by_bulkiness(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
@@ -220,9 +236,9 @@ def merge_result():
         results = pd.concat(files)
         results.to_csv("FinalResults.csv", index=False)
 
-def search_for_computed_batches():
+def search_for_computed_batches(output_path: Path) -> int:
     """Check for batches that have been already computed."""
-    path = Path("results")
+    path = Path(output_path)
     if path.exists():
         computed = len(set(path.glob("batch_*")))
         return computed - 1 if computed > 0 else 0
@@ -231,7 +247,7 @@ def search_for_computed_batches():
 
 def main():
     """Parse the command line arguments to screen smiles."""
-    parser = argparse.ArgumentParser(description="modeller -i input.yml")
+    parser = argparse.ArgumentParser("smiles_screener")
     # configure logger
     parser.add_argument('-i', required=True,
                         help="Input file with options")
