@@ -156,3 +156,15 @@ def test_filter_scscore_greater(tmp_path: Path) -> None:
 
     expected = {"O=C(O)C1CNC2C3CC4C2N4C13"}
     check_expected(opts, expected)
+
+
+def test_single_anchor(tmp_path: Path) -> None:
+    """Check that only molecules with a single Carboxylic acids are included."""
+    smiles_file = "smiles_carboxylic.csv"
+    filters = {"single_anchor": True}
+    opts = create_options(filters, smiles_file, tmp_path)
+    opts.anchor = "O(C=O)[H]"
+
+    expected = {"CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"}
+
+    check_expected(opts, expected)
