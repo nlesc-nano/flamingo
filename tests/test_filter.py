@@ -170,4 +170,3 @@ def test_single_anchor(tmp_path: Path) -> None:
     expected = {"CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"}
 
     check_expected(opts, expected)
-    assert False
