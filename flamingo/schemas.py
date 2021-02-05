@@ -67,7 +67,10 @@ SCHEMA_SCREEN = Schema({
     Optional("output_path", default="results"): str,
 
     # Number of molecules per batch
-    Optional("batch_size", default=1000): int
+    Optional("batch_size", default=1000): int,
+
+    # Run filters in Parallel
+    Optional("parallel", default=True): bool
 })
 
 DICT_ACTIONS = {"screen": SCHEMA_SCREEN}
