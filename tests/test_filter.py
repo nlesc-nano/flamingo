@@ -5,6 +5,7 @@ import shutil
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Set
 
+import numpy as np
 import pandas as pd
 import pytest
 import schema
@@ -36,6 +37,7 @@ def create_options(filters: Mapping[str, Any], smiles_file: str, tmp_path: Path)
     opts.output_path = "results"
     opts.workdir = tmp_path
     opts.batch_size = 100
+    opts.parallel = np.random.choice([True, False])
 
     return opts
 
@@ -168,3 +170,4 @@ def test_single_anchor(tmp_path: Path) -> None:
     expected = {"CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"}
 
     check_expected(opts, expected)
+    assert False

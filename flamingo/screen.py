@@ -12,16 +12,17 @@ import argparse
 import logging
 import sys
 from functools import partial
+from multiprocessing import Pool
 from pathlib import Path
-from typing import FrozenSet, Optional
+from typing import Any, FrozenSet, Mapping, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import Fragments
 
-from .features.featurizer import generate_fingerprints
 from .cat_interface import compute_bulkiness
+from .features.featurizer import generate_fingerprints
 from .log_config import configure_logger
 from .models.scscore import SCScorer
 from .schemas import validate_input
@@ -52,21 +53,38 @@ def split_filter_in_batches(opts: Options) -> None:
 
     # Check precomputed batches
     computed_batches = search_for_computed_batches(opts.output_path)
+    if computed_batches > 0:
+        logger.info(f"There are already {computed_batches} batches computed!")
+        molecules = molecules.iloc[computed_batches - 1:]
 
-    for k, batch in enumerate(np.array_split(molecules, nbatches)):
-        if k < computed_batches:
-            logger.info(f"Batch {k} has already been computed, skipping it")
-        else :
-            logger.info(f"computing batch: {k}")
-            output_file = create_ouput_file(result_path, k)
-            try:
-                apply_filters(batch, opts, output_file)
-            except RuntimeError as err:
-                print("Error applying filter:\n", err)
-                raise
-            except Exception as ex:
-                error, msg, _ = sys.exc_info()
-                logger.error(f"Error processing batch: {k}\n{error} {msg}", exc_info=ex)
+    tasks = enumerate(np.array_split(molecules, nbatches))
+    if not opts.parallel:
+        # Run batches sequential in a single CPU
+        for k, batch in tasks:
+            k += computed_batches
+            compute_batch(opts.to_dict(), result_path, (k, batch))
+    else:
+        # Run in Multiple CPUs
+        worker = partial(compute_batch,opts.to_dict(), result_path)
+        with Pool() as p:
+            list(p.imap_unordered(worker, tasks, 1))
+
+
+def compute_batch(opts: Mapping[str, Any], result_path: Path, data: Tuple[int, pd.DataFrame]) -> None:
+    """Compute a single filtering batch."""
+    opts = Options(opts)
+    number, batch = data
+
+    logger.info(f"computing batch: {number}")
+    output_file = create_ouput_file(result_path, number)
+    try:
+        apply_filters(batch, opts, output_file)
+    except RuntimeError as err:
+        print("Error applying filter:\n", err)
+        raise
+    except Exception as ex:
+        error, msg, _ = sys.exc_info()
+        logger.error(f"Error processing batch: {number}\n{error} {msg}", exc_info=ex)
 
 
 def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> None:
