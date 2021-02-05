@@ -59,7 +59,8 @@ def check_expected(opts: Options, expected: Set[str]) -> None:
         assert len(computed.smiles) == len(expected)
 
     finally:
-        remove_output(opts.output_path)
+        pass
+        # remove_output(opts.output_path)
 
 
 def test_filter_cli(mocker: MockFixture) -> None:
