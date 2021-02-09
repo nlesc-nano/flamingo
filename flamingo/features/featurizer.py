@@ -117,7 +117,7 @@ def compute_molecular_graph_edges(mol: Chem.rdchem.Mol) -> np.ndarray:
     With a two edges for each bond representing a undirectional graph.
     """
     number_edges = 2 * mol.GetNumBonds()
-    edges = np.zeros((2, number_edges), dtype=np.int)
+    edges = np.zeros((2, number_edges), dtype=int)
     for k, bond in enumerate(mol.GetBonds()):
         edges[0, 2 * k] = bond.GetBeginAtomIdx()
         edges[1, 2 * k] = bond.GetEndAtomIdx()

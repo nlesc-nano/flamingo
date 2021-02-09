@@ -1,13 +1,15 @@
 """Utility functions."""
 from pathlib import Path
-from typing import Any, Dict
+from subprocess import getoutput
+from typing import Any, Dict, Iterator, List
 
 import h5py
 import numpy as np
 import pandas as pd
+from more_itertools import chunked
 from rdkit import Chem
 
-__all__ = ["Options", "normalize_smiles", "read_molecules"]
+__all__ = ["Options", "get_number_of_smiles", "normalize_smiles", "read_molecules"]
 
 
 class Options(dict):
@@ -75,6 +77,15 @@ def retrieve_hdf5_data(path_hdf5: Path, paths_to_prop: str) -> np.ndarray:
         raise OSError(msg)
 
 
+def normalize_smiles(smile: str) -> str:
+    """Write a smile in its normal form."""
+    mol = Chem.MolFromSmiles(smile)
+    if mol is not None:
+        return Chem.MolToSmiles(mol)
+    else:
+        return smile
+
+
 def read_molecules(input_file: Path) -> pd.DataFrame:
     """Read data (e.g. smiles) from a csv-like file."""
     df = pd.read_csv(input_file).reset_index(drop=True)
@@ -83,10 +94,20 @@ def read_molecules(input_file: Path) -> pd.DataFrame:
     return df
 
 
-def normalize_smiles(smile: str) -> str:
-    """Write a smile in its normal form."""
-    mol = Chem.MolFromSmiles(smile)
-    if mol is not None:
-        return Chem.MolToSmiles(mol)
-    else:
-        return smile
+def read_molecules_in_batches(input_file: Path, size: int) -> Iterator[Any]:
+    """Read a file into chunks."""
+    f = open(input_file, 'r')
+    #Skip first line with the header
+    f.readline()
+    return chunked(f.readlines(), size)
+
+
+def get_number_of_smiles(input_file: Path) -> int:
+    """Count the lines in `input_file`."""
+    output = getoutput(f"wc -l {input_file.absolute().as_posix()}")
+    return int(output.split()[0])
+
+
+def take(it: Iterator[Any], n: int) -> List[Any]:
+    """Take n elements of the iterator."""
+    return [next(it) for _ in range(n)]
