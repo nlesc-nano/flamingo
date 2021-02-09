@@ -14,7 +14,7 @@ import sys
 from functools import partial
 from multiprocessing import Pool
 from pathlib import Path
-from typing import Any, FrozenSet, Mapping, Optional, Tuple
+from typing import Any, FrozenSet, List, Mapping, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -26,7 +26,7 @@ from .features.featurizer import generate_fingerprints
 from .log_config import configure_logger
 from .models.scscore import SCScorer
 from .schemas import validate_input
-from .utils import Options, read_molecules
+from .utils import Options, get_number_of_smiles, read_molecules_in_batches, take
 
 logger = logging.getLogger(__name__)
 
@@ -40,28 +40,26 @@ def split_filter_in_batches(opts: Options) -> None:
         :class:`swan.utils.Options` options to run the filtering
 
     """
-    # Read molecules into a pandas dataframe
-    molecules = read_molecules(opts.smiles_file)
-
     # Create folder to store the output
     result_path = Path(opts.output_path)
     result_path.mkdir(exist_ok=True, parents=True)
 
-    # Compute the number of batches to split
-    nbatches = len(molecules) // opts.batch_size
-    nbatches = nbatches if nbatches > 0 else 1
+    # Read smiles using an iterator
+    smiles_file = Path(opts.smiles_file)
+    smiles = read_molecules_in_batches(smiles_file, opts.batch_size)
 
     # Check precomputed batches
     computed_batches = search_for_computed_batches(opts.output_path)
     if computed_batches > 0:
         logger.info(f"There are already {computed_batches} batches computed!")
-        molecules = molecules.iloc[computed_batches - 1:]
+        # removed the computed batches
+        take(smiles, computed_batches - 1)
 
-    tasks = enumerate(np.array_split(molecules, nbatches))
+
+    tasks = enumerate(smiles, start=computed_batches)
     if not opts.parallel:
         # Run batches sequential in a single CPU
         for k, batch in tasks:
-            k += computed_batches
             compute_batch(opts.to_dict(), result_path, (k, batch))
     else:
         # Run in Multiple CPUs
@@ -70,10 +68,12 @@ def split_filter_in_batches(opts: Options) -> None:
             list(p.imap_unordered(worker, tasks, 1))
 
 
-def compute_batch(opts: Mapping[str, Any], result_path: Path, data: Tuple[int, pd.DataFrame]) -> None:
+def compute_batch(opts: Mapping[str, Any], result_path: Path, data: Tuple[int, List[str]]) -> None:
     """Compute a single filtering batch."""
     opts = Options(opts)
-    number, batch = data
+    number, smiles = data
+    batch = pd.DataFrame({"smiles": map(lambda x: x.rstrip(), smiles)})
+    print("batch: ", batch)
 
     logger.info(f"computing batch: {number}")
     output_file = create_ouput_file(result_path, number)
