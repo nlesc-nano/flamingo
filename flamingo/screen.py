@@ -73,7 +73,6 @@ def compute_batch(opts: Mapping[str, Any], result_path: Path, data: Tuple[int, L
     opts = Options(opts)
     number, smiles = data
     batch = pd.DataFrame({"smiles": map(lambda x: x.rstrip(), smiles)})
-    print("batch: ", batch)
 
     logger.info(f"computing batch: {number}")
     output_file = create_ouput_file(result_path, number)
