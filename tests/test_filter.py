@@ -3,7 +3,7 @@
 import argparse
 import shutil
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Set
+from typing import Any, Iterable, Mapping, FrozenSet
 
 import numpy as np
 import pandas as pd
@@ -49,7 +49,7 @@ def remove_output(output_path: str) -> None:
         shutil.rmtree(path)
 
 
-def check_expected(opts: Options, expected: Set[str]) -> None:
+def check_expected(opts: Options, expected: FrozenSet[str]) -> None:
     """Run a filter workflow using `opts` and check the results."""
     try:
         computed = run_workflow(opts)
@@ -94,9 +94,9 @@ def test_contain_functional_groups(tmp_path: Path) -> None:
     smiles_file = "smiles_functional_groups.csv"
     filters = {"include_functional_groups": {"groups": ["[CX3](=O)[OX2H1]"],"maximum": 1}}
     opts = create_options(filters, smiles_file, tmp_path)
-    expected = {"O=C(O)C1CNC2C3CC4C2N4C13", "C#CC12CC(CO1)NCC2C(=O)O",
+    expected = frozenset({"O=C(O)C1CNC2C3CC4C2N4C13", "C#CC12CC(CO1)NCC2C(=O)O",
                 "CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O",
-                "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"}
+                "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"})
     check_expected(opts, expected)
 
 
@@ -107,8 +107,8 @@ def test_exclude_functional_groups(tmp_path: Path) -> None:
     filters = {"exclude_functional_groups": {"groups": [
         "[#7][#6](=[OX1])", "C#C", "[#6](=[OX1])[OX2][#6]", "[NX3]"], "maximum": 1}}
     opts = create_options(filters, smiles_file, tmp_path)
-    expected = {"c1ccccc1", "CCO", "CCCCCCCCC=CCCCCCCCC(=O)O",
-                "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"}
+    expected = frozenset({"c1ccccc1", "CCO", "CCCCCCCCC=CCCCCCCCC(=O)O",
+                "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"})
     check_expected(opts, expected)
 
 
@@ -120,7 +120,7 @@ def test_filter_bulkiness(tmp_path: Path) -> None:
     opts.core = PATH_TEST / "Cd68Se55.xyz"
     opts.anchor = "O(C=O)[H]"
 
-    expected = {"CC(=O)O", "CC(O)C(=O)O"}
+    expected = frozenset({"CC(=O)O", "CC(O)C(=O)O"})
     check_expected(opts, expected)
 
 
@@ -131,7 +131,7 @@ def test_filter_bulkiness_no_core(tmp_path: Path) -> None:
     opts = create_options(filters, smiles_file, tmp_path)
     opts.anchor = "O(C=O)[H]"
 
-    expected = set()  # type: Set[str]
+    expected = frozenset()  # type: FrozenSet[str]
     with pytest.raises(RuntimeError) as err:
         check_expected(opts, expected)
 
@@ -146,7 +146,7 @@ def test_filter_scscore_lower(tmp_path: Path) -> None:
     filters = {"scscore": {"lower_than": 1.3}}
     opts = create_options(filters, smiles_file, tmp_path)
 
-    expected = {"CC(=O)O"}
+    expected = frozenset({"CC(=O)O"})
     check_expected(opts, expected)
 
 
@@ -156,7 +156,7 @@ def test_filter_scscore_greater(tmp_path: Path) -> None:
     filters = {"scscore": {"greater_than": 3.0}}
     opts = create_options(filters, smiles_file, tmp_path)
 
-    expected = {"O=C(O)C1CNC2C3CC4C2N4C13"}
+    expected = frozenset({"O=C(O)C1CNC2C3CC4C2N4C13"})
     check_expected(opts, expected)
 
 
@@ -167,7 +167,7 @@ def test_single_carboxylic(tmp_path: Path) -> None:
     opts = create_options(filters, smiles_file, tmp_path)
     opts.anchor = "O(C=O)[H]"
 
-    expected = {"CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"}
+    expected = frozenset({"CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"})
 
     check_expected(opts, expected)
 
@@ -180,7 +180,7 @@ def test_single_functional_group(tmp_path: Path) -> None:
     opts = create_options(filters, smiles_file, tmp_path)
     opts.anchor = "O(C=O)[H]"
 
-    expected = {"NCCc1ccncc1", "O=C(O)C1CCC1(F)F"}
+    expected = frozenset({"NCCc1ccncc1", "O=C(O)C1CCC1(F)F"})
     check_expected(opts, expected)
 
 
@@ -191,7 +191,8 @@ def test_multiple_anchor(tmp_path: Path) -> None:
     opts = create_options(filters, smiles_file, tmp_path)
     opts.anchor = "O(C=O)[H]"
 
-    expected = {"CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O", "O=C(O)c1cccc(C(=O)O)c1"}
+    expected = frozenset({
+        "CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O", "O=C(O)c1cccc(C(=O)O)c1"})
 
     check_expected(opts, expected)
 
