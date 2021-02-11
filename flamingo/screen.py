@@ -14,7 +14,7 @@ import sys
 from functools import partial
 from multiprocessing import Pool
 from pathlib import Path
-from typing import Any, Callable, Iterator, List, Mapping, Optional, Set, Tuple
+from typing import Any, Callable, FrozenSet, Iterator, List, Mapping, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -155,7 +155,7 @@ def filter_single_group(
 
     # Now remove the molecules that have more than 2 different functional groups
     # or the same functional group more than once
-    patterns = {Chem.MolFromSmarts(f) for f in groups}
+    patterns = frozenset(Chem.MolFromSmarts(f) for f in groups)
     pattern_check = np.vectorize(partial(has_single_substructure, patterns))
     return molecules[pattern_check(molecules["rdkit_molecules"])]
 
@@ -164,7 +164,7 @@ def filter_by_functional_group(
     molecules: pd.DataFrame, groups: List[str], exclude: bool) -> pd.DataFrame:
     """Search for a set of functional_groups."""
     # Transform functional_groups to rkdit molecules
-    patterns = {Chem.MolFromSmarts(f) for f in groups}
+    patterns = frozenset(Chem.MolFromSmarts(f) for f in groups)
 
     # Function to apply predicate
     pattern_check = np.vectorize(partial(has_substructure, patterns))
@@ -177,12 +177,12 @@ def filter_by_functional_group(
     return molecules[has_pattern]
 
 
-def has_substructure(patterns: Set[Chem.rdchem.Mol], mol: Chem.Mol) -> bool:
+def has_substructure(patterns: FrozenSet[Chem.rdchem.Mol], mol: Chem.Mol) -> bool:
     """Check if there is any element of `pattern` in `mol`."""
     return False if mol is None else any(mol.HasSubstructMatch(p) for p in patterns)
 
 
-def has_single_substructure(patterns: Set, mol: Chem.Mol) -> bool:
+def has_single_substructure(patterns: FrozenSet[Chem.rdchem.Mol], mol: Chem.Mol) -> bool:
     """Check if there a single functional pattern in mol."""
     acc = 0
     for pat in patterns:
