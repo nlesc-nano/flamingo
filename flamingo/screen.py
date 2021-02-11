@@ -14,7 +14,7 @@ import sys
 from functools import partial
 from multiprocessing import Pool
 from pathlib import Path
-from typing import Any, Set, List, Mapping, Optional, Tuple
+from typing import Any, Callable, Iterator, List, Mapping, Optional, Set, Tuple
 
 import numpy as np
 import pandas as pd
@@ -26,7 +26,8 @@ from .features.featurizer import generate_fingerprints
 from .log_config import configure_logger
 from .models.scscore import SCScorer
 from .schemas import validate_input
-from .utils import Options, get_number_of_smiles, read_molecules_in_batches, take
+from .utils import (Options, get_number_of_smiles, read_molecules_in_batches,
+                    take)
 
 logger = logging.getLogger(__name__)
 
@@ -181,15 +182,8 @@ def filter_by_functional_group(
 
 def exclude_same_functional_groups(molecules: pd.DataFrame, patterns: Set[Chem.rdchem.Mol]) -> pd.DataFrame:
     """Exclude molecules that has the same functional group more than one time."""
-    has_carboxylic_acid = has_substructure(patterns, Chem.MolFromSmiles("[OH]C=O"))
-
-    # Select the functional groups in patterns
-    pairs = [(has_carboxylic_acid, Fragments.fr_COO)]
-    # Check that the functional group is present and select its fragment counter
-    all_counters = map(lambda t: t[1], filter(lambda t: t[0], pairs))
-
     # Iterate over all functional groups
-    for counter_function in all_counters:
+    for counter_function in generate_fragment_counters(patterns):
         function_fragments = np.vectorize(counter_function)
         # Count the number of a specific functional group in a molecule
         number_of_groups = function_fragments(molecules["rdkit_molecules"])
@@ -198,11 +192,25 @@ def exclude_same_functional_groups(molecules: pd.DataFrame, patterns: Set[Chem.r
     return molecules
 
 
+def generate_fragment_counters(patterns: Set[Chem.rdchem.Mol]) -> Iterator[Callable]:
+    """Search for a functional group in pattern and return a function that this group in a molecule."""
+    functional_groups = (
+        ("[OH]C=O", "fr_COO"),    #  Carboxylic acid,
+        ("CO", "fr_Al_OH"),       #  Aliphatic Hydroxyl
+        ("Oc1ccccc1", "fr_Ar_OH") #  Aromatic Hydroxyl
+    )
+    # Select the functional groups in patterns
+    pairs = [(has_substructure(patterns, Chem.MolFromSmiles(smile)), getattr(Fragments, fr))
+            for smile, fr in functional_groups]
+
+    # Check that the functional group is present and select its fragment counter
+    return map(lambda t: t[1], filter(lambda t: t[0], pairs))
 
 
 def has_substructure(patterns: Set[Chem.rdchem.Mol], mol: Chem.Mol) -> bool:
     """Check if there is any element of `pattern` in `mol`."""
     return False if mol is None else any(mol.HasSubstructMatch(p) for p in patterns)
+
 
 def has_single_substructure(patterns: Set, mol: Chem.Mol) -> bool:
     """Check if there a single functional pattern in mol."""
@@ -289,6 +297,7 @@ def merge_result():
         results = pd.concat(files)
         results.to_csv("FinalResults.csv", index=False)
 
+
 def search_for_computed_batches(output_path: Path) -> int:
     """Check for batches that have been already computed."""
     path = Path(output_path)
@@ -297,6 +306,7 @@ def search_for_computed_batches(output_path: Path) -> int:
         return computed - 1 if computed > 0 else 0
     else:
         return 0
+
 
 def main():
     """Parse the command line arguments to screen smiles."""
