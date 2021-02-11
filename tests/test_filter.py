@@ -180,7 +180,7 @@ def test_single_functional_group(tmp_path: Path) -> None:
     opts = create_options(filters, smiles_file, tmp_path)
     opts.anchor = "O(C=O)[H]"
 
-    expected = {"NCCc1ccncc1"}
+    expected = {"NCCc1ccncc1", "O=C(O)C1CCC1(F)F"}
     check_expected(opts, expected)
 
 
