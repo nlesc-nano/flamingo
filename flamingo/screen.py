@@ -187,7 +187,7 @@ def exclude_same_functional_groups(molecules: pd.DataFrame, patterns: Set[Chem.r
         # Count the number of a specific functional group in a molecule
         number_of_groups = function_fragments(molecules["rdkit_molecules"])
         # Keep only molecules with a single functional group
-        molecules = molecules[number_of_groups == 1]
+        molecules = molecules[number_of_groups <= 1]
     return molecules
 
 
