@@ -9,13 +9,12 @@
 
 """
 import tempfile
-from numbers import Real
+from numbers import Integral, Real
 
 import yaml
 from schema import Optional, Or, Schema, SchemaError
 
 from .utils import Options
-
 
 #: Schema to validate the ordering keywords
 SCHEMA_ORDERING = Or(
@@ -29,14 +28,23 @@ SCHEMA_BULKINESS = Schema({
     Optional("d", default="auto"): Or(str, Real, None),
     Optional("h_lim", default=10): Or(Real, None)})
 
+
+#: Schema to include/exclude multiple functional groups
+SCHEMA_FUNCTIONAL_GROUPS = Schema({
+    #Functional Groups to include/exclude
+    "groups": Schema([str]),
+    Optional("maximum", default=1): Integral
+})
+
+
 #: Schema to validate the filters to apply for screening
 SCHEMA_FILTERS = Schema({
     # Filter out molecules with more a given anchor
     Optional("single_anchor", default=True): bool,
 
     # Include or exclude one or more functional group using smiles
-    Optional("include_functional_groups"): Schema([str]),
-    Optional("exclude_functional_groups"): Schema([str]),
+    Optional("include_functional_groups"): SCHEMA_FUNCTIONAL_GROUPS,
+    Optional("exclude_functional_groups"): SCHEMA_FUNCTIONAL_GROUPS,
 
     # Select smiles >, < or = to some value
     Optional("bulkiness"): SCHEMA_BULKINESS,

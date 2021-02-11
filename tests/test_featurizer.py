@@ -31,6 +31,6 @@ def test_molecular_features():
 def test_molecular_graph():
     """Test that the molecular graph is correctly generated."""
     graph = compute_molecular_graph_edges(MOL)
-    expected = np.array([[0, 1, 1, 2, 1, 3], [1, 0, 2, 1, 3, 1]], dtype=np.int)
+    expected = np.array([[0, 1, 1, 2, 1, 3], [1, 0, 2, 1, 3, 1]], dtype=int)
 
     assert np.all(graph == expected)

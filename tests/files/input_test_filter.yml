@@ -9,7 +9,9 @@ anchor:
 
 filters:
   include_functional_groups:
-    - "[CX3](=O)[OX2H1]"
+    groups:
+      - "[CX3](=O)[OX2H1]"
+    maximum: 1
   scscore:
     lower_than:
       2.0

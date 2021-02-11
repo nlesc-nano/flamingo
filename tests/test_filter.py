@@ -92,7 +92,7 @@ def test_invalid_input(mocker: MockFixture, tmp_path: Path):
 def test_contain_functional_groups(tmp_path: Path) -> None:
     """Test that the functional group filter is applied properly."""
     smiles_file = "smiles_functional_groups.csv"
-    filters = {"include_functional_groups": ["[CX3](=O)[OX2H1]"]}
+    filters = {"include_functional_groups": {"groups": ["[CX3](=O)[OX2H1]"],"maximum": 1}}
     opts = create_options(filters, smiles_file, tmp_path)
     expected = {"O=C(O)C1CNC2C3CC4C2N4C13", "C#CC12CC(CO1)NCC2C(=O)O",
                 "CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O",
@@ -104,8 +104,8 @@ def test_exclude_functional_groups(tmp_path: Path) -> None:
     """Test that some functional groups are excluded correctly."""
 
     smiles_file = "smiles_functional_groups.csv"
-    filters = {"exclude_functional_groups": [
-        "[#7][#6](=[OX1])", "C#C", "[#6](=[OX1])[OX2][#6]", "[NX3]"]}
+    filters = {"exclude_functional_groups": {"groups": [
+        "[#7][#6](=[OX1])", "C#C", "[#6](=[OX1])[OX2][#6]", "[NX3]"], "maximum": 1}}
     opts = create_options(filters, smiles_file, tmp_path)
     expected = {"c1ccccc1", "CCO", "CCCCCCCCC=CCCCCCCCC(=O)O",
                 "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"}
@@ -163,10 +163,23 @@ def test_filter_scscore_greater(tmp_path: Path) -> None:
 def test_single_anchor(tmp_path: Path) -> None:
     """Check that only molecules with a single Carboxylic acids are included."""
     smiles_file = "smiles_carboxylic.csv"
-    filters = {"single_anchor": True}
+    filters = {"include_functional_groups": {"groups": ["[CX3](=O)[OX2H1]"], "maximum": 1}}
     opts = create_options(filters, smiles_file, tmp_path)
     opts.anchor = "O(C=O)[H]"
 
     expected = {"CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"}
 
     check_expected(opts, expected)
+
+
+def test_multiple_anchor(tmp_path: Path) -> None:
+    """Check that molecules with multiple Carboxylic acids are included."""
+    smiles_file = "smiles_carboxylic.csv"
+    filters = {"include_functional_groups": {"groups": ["[CX3](=O)[OX2H1]"], "maximum": 2}}
+    opts = create_options(filters, smiles_file, tmp_path)
+    opts.anchor = "O(C=O)[H]"
+
+    expected = {"CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O", "O=C(O)c1cccc(C(=O)O)c1"}
+
+    check_expected(opts, expected)
+
