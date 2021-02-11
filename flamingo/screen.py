@@ -19,7 +19,6 @@ from typing import Any, Callable, Iterator, List, Mapping, Optional, Set, Tuple
 import numpy as np
 import pandas as pd
 from rdkit import Chem
-from rdkit.Chem import Fragments
 
 from .cat_interface import compute_bulkiness
 from .features.featurizer import generate_fingerprints
@@ -155,12 +154,11 @@ def filter_single_group(
     molecules = filter_by_functional_group(molecules, groups, False)
 
     # Now remove the molecules that have more than 2 different functional groups
+    # or the same functional group more than once
     patterns = {Chem.MolFromSmarts(f) for f in groups}
     pattern_check = np.vectorize(partial(has_single_substructure, patterns))
-    molecules = molecules[pattern_check(molecules["rdkit_molecules"])]
+    return molecules[pattern_check(molecules["rdkit_molecules"])]
 
-    # Finally exclude molecules that have more that 2 identical functional groups
-    return exclude_same_functional_groups(molecules, patterns)
 
 def filter_by_functional_group(
     molecules: pd.DataFrame, groups: List[str], exclude: bool) -> pd.DataFrame:
@@ -179,39 +177,6 @@ def filter_by_functional_group(
     return molecules[has_pattern]
 
 
-def exclude_same_functional_groups(molecules: pd.DataFrame, patterns: Set[Chem.rdchem.Mol]) -> pd.DataFrame:
-    """Exclude molecules that has the same functional group more than one time."""
-    # Iterate over all functional groups
-    for counter_function in generate_fragment_counters(patterns):
-        function_fragments = np.vectorize(counter_function)
-        # Count the number of a specific functional group in a molecule
-        number_of_groups = function_fragments(molecules["rdkit_molecules"])
-        # Keep only molecules with a single functional group
-        molecules = molecules[number_of_groups <= 1]
-    return molecules
-
-
-def generate_fragment_counters(patterns: Set[Chem.rdchem.Mol]) -> Iterator[Callable]:
-    """Search for a functional group in pattern and return a function that this group in a molecule."""
-    functional_groups = (
-        ("[OH]C=O", "fr_COO"),          #  Carboxylic acid
-        ("CO", "fr_Al_OH"),             #  Aliphatic Hydroxyl
-        ("Oc1ccccc1", "fr_Ar_OH"),      #  Aromatic Hydroxyl
-        ("C1=CC=C(C=C1)N", "fr_Ar_NH"), #  Aromatic amines
-        ("CN", "fr_NH2"),               #  Primary amines
-        ("CNC","fr_NH1"),               #  Secondary amines
-        ("CP(=O)(O)O", "fr_phos_acid"), #  Phosphonic acid
-        ("SC", "fr_SH"),                #  Thiols
-        ("CS(=O)(=O)O", "fr_sulfone"),  #  Sulfonic acid
-    )
-    # Select the functional groups in patterns
-    pairs = [(has_substructure(patterns, Chem.MolFromSmiles(smile)), getattr(Fragments, fr))
-            for smile, fr in functional_groups]
-
-    # Check that the functional group is present and select its fragment counter
-    return map(lambda t: t[1], filter(lambda t: t[0], pairs))
-
-
 def has_substructure(patterns: Set[Chem.rdchem.Mol], mol: Chem.Mol) -> bool:
     """Check if there is any element of `pattern` in `mol`."""
     return False if mol is None else any(mol.HasSubstructMatch(p) for p in patterns)
@@ -221,12 +186,16 @@ def has_single_substructure(patterns: Set, mol: Chem.Mol) -> bool:
     """Check if there a single functional pattern in mol."""
     acc = 0
     for pat in patterns:
-        has_pattern = mol.HasSubstructMatch(pat)
-        if has_pattern and acc == 0:
-            acc += 1
-        # There is more than one pattern
-        elif has_pattern and acc > 0:
-            return False
+        if mol.HasSubstructMatch(pat):
+            # There is more than one functional group of the same type
+            if len(mol.GetSubstructMatches(pat, uniquify=True)) > 1:
+                return False
+            # There are two or more different functional groups
+            elif acc > 0:
+                return False
+            else:
+                acc += 1
+
     return True
 
 
