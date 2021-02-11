@@ -170,3 +170,16 @@ def test_single_anchor(tmp_path: Path) -> None:
     expected = {"CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"}
 
     check_expected(opts, expected)
+
+
+def test_multiple_anchor(tmp_path: Path) -> None:
+    """Check that molecules with multiple Carboxylic acids are included."""
+    smiles_file = "smiles_carboxylic.csv"
+    filters = {"include_functional_groups": {"groups": ["[CX3](=O)[OX2H1]"], "maximum": 2}}
+    opts = create_options(filters, smiles_file, tmp_path)
+    opts.anchor = "O(C=O)[H]"
+
+    expected = {"CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O", "O=C(O)c1cccc(C(=O)O)c1"}
+
+    check_expected(opts, expected)
+

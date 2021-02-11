@@ -144,7 +144,6 @@ def include_functional_groups(molecules: pd.DataFrame, opts: Options) -> pd.Data
 def exclude_functional_groups(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
     """Check that the molecules do not contain some functional groups."""
     groups = opts["filters"]["exclude_functional_groups"]["groups"]
-    maximum = opts["filters"]["exclude_functional_groups"]["maximum"]
     logger.debug(f"exclude molecules that contains the groups: {groups}")
     return filter_by_functional_group(molecules, groups, True)
 
