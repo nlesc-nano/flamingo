@@ -8,6 +8,7 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 0.2.2 [Unreleased]
 ******************
 * Run all the filters in parallel (#38)
+* Filter molecules with a single functional group (#43)
 
 0.2.1 [14/01/2021]
 ******************

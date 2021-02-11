@@ -160,7 +160,7 @@ def test_filter_scscore_greater(tmp_path: Path) -> None:
     check_expected(opts, expected)
 
 
-def test_single_anchor(tmp_path: Path) -> None:
+def test_single_carboxylic(tmp_path: Path) -> None:
     """Check that only molecules with a single Carboxylic acids are included."""
     smiles_file = "smiles_carboxylic.csv"
     filters = {"include_functional_groups": {"groups": ["[CX3](=O)[OX2H1]"], "maximum": 1}}
@@ -169,6 +169,18 @@ def test_single_anchor(tmp_path: Path) -> None:
 
     expected = {"CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"}
 
+    check_expected(opts, expected)
+
+
+def test_single_functional_group(tmp_path: Path) -> None:
+    """Check that molecules with a single functional group are filtered."""
+    smiles_file = "smiles_multiple_groups.csv"
+    filters = {"include_functional_groups": {
+        "groups": ["[CX3](=O)[OX2H1]", "[#16X2H]", "[NX3;H2,H1;!$(NC=O)]"], "maximum": 1}}
+    opts = create_options(filters, smiles_file, tmp_path)
+    opts.anchor = "O(C=O)[H]"
+
+    expected = {"NCCc1ccncc1", "O=C(O)C1CCC1(F)F"}
     check_expected(opts, expected)
 
 
