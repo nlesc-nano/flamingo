@@ -194,9 +194,15 @@ def exclude_same_functional_groups(molecules: pd.DataFrame, patterns: Set[Chem.r
 def generate_fragment_counters(patterns: Set[Chem.rdchem.Mol]) -> Iterator[Callable]:
     """Search for a functional group in pattern and return a function that this group in a molecule."""
     functional_groups = (
-        ("[OH]C=O", "fr_COO"),    #  Carboxylic acid,
-        ("CO", "fr_Al_OH"),       #  Aliphatic Hydroxyl
-        ("Oc1ccccc1", "fr_Ar_OH") #  Aromatic Hydroxyl
+        ("[OH]C=O", "fr_COO"),          #  Carboxylic acid
+        ("CO", "fr_Al_OH"),             #  Aliphatic Hydroxyl
+        ("Oc1ccccc1", "fr_Ar_OH"),      #  Aromatic Hydroxyl
+        ("C1=CC=C(C=C1)N", "fr_Ar_NH"), #  Aromatic amines
+        ("CN", "fr_NH2"),               #  Primary amines
+        ("CNC","fr_NH1"),               #  Secondary amines
+        ("CP(=O)(O)O", "fr_phos_acid"), #  Phosphonic acid
+        ("SC", "fr_SH"),                #  Thiols
+        ("CS(=O)(=O)O", "fr_sulfone"),  #  Sulfonic acid
     )
     # Select the functional groups in patterns
     pairs = [(has_substructure(patterns, Chem.MolFromSmiles(smile)), getattr(Fragments, fr))
