@@ -54,16 +54,17 @@ file following the subsequent schema yaml_::
     
  filters:
    include_functional_groups:
-     - "[CX3](=O)[OX2H1]" # Include carboxylic acids
+     groups:
+        - "[CX3](=O)[OX2H1]" # Include carboxylic acids
    exclude_functional_groups:
-     - "[NX3]"  # Exclude tertiary amines
-     - "C#C"    # Exclude triplet Carbon-Carbon bonds
+     groups:
+        - "[NX3]"  # Exclude tertiary amines
+        - "C#C"    # Exclude triplet Carbon-Carbon bonds
    scscore:
      lower_than:
        3.0
    bulkiness:
-     h_lim: 10
-     lower_than: 200
+     lower_than: 20
 
 
 The *smiles_file* entry contains the path to the files containing the smiles. The
