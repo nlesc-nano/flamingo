@@ -56,6 +56,7 @@ file following the subsequent schema yaml_::
    include_functional_groups:
      groups:
         - "[CX3](=O)[OX2H1]" # Include carboxylic acids
+     maximum: 1
    exclude_functional_groups:
      groups:
         - "[NX3]"  # Exclude tertiary amines
@@ -84,6 +85,8 @@ The *include_functional_groups* and *exclude_functional_groups* as their names s
 keep and drop molecules based on a list of functional groups represented as
 `SMARTS <https://en.wikipedia.org/wiki/SMILES_arbitrary_target_specification>`_.
 
+the *maximum* keyword indicates what is the maximum number of functional groups
+that can be present.
 
 2. Synthesizability scores
 --------------------------
