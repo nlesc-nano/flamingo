@@ -12,11 +12,10 @@ import json
 import logging
 from contextlib import redirect_stderr
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, Union
 
 import h5py
 import numpy as np
-import pandas as pd
 import yaml
 from CAT.base import prep
 from scm.plams import Settings
@@ -92,7 +91,7 @@ def extract_optimized_geometry(path_hdf5: Path, index: int = -1) -> str:
 
 def compute_properties_with_cat(
         smile: str, input_file: Union[str, Path], workdir: str) -> None:
-    """Compute properties for the given smile and write then down in JSON format.
+    """Compute properties for the given smile and write them down in JSON format.
 
     Parameters
     ----------

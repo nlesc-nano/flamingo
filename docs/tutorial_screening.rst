@@ -54,16 +54,18 @@ file following the subsequent schema yaml_::
     
  filters:
    include_functional_groups:
-     - "[CX3](=O)[OX2H1]" # Include carboxylic acids
+     groups:
+        - "[CX3](=O)[OX2H1]" # Include carboxylic acids
+     maximum: 1
    exclude_functional_groups:
-     - "[NX3]"  # Exclude tertiary amines
-     - "C#C"    # Exclude triplet Carbon-Carbon bonds
+     groups:
+        - "[NX3]"  # Exclude tertiary amines
+        - "C#C"    # Exclude triplet Carbon-Carbon bonds
    scscore:
      lower_than:
        3.0
    bulkiness:
-     h_lim: 10
-     lower_than: 200
+     lower_than: 20
 
 
 The *smiles_file* entry contains the path to the files containing the smiles. The
@@ -83,6 +85,8 @@ The *include_functional_groups* and *exclude_functional_groups* as their names s
 keep and drop molecules based on a list of functional groups represented as
 `SMARTS <https://en.wikipedia.org/wiki/SMILES_arbitrary_target_specification>`_.
 
+the *maximum* keyword indicates what is the maximum number of functional groups
+that can be present.
 
 2. Synthesizability scores
 --------------------------
