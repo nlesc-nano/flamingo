@@ -115,7 +115,7 @@ def take(it: Iterator[Any], n: int) -> List[Any]:
 
 def read_smile_and_sanitize(smile: str) -> Optional[Chem.rdchem.Mol]:
     """Try to read and sanitize a given smile"""
-    sanitize = Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_ADJUSTHS
+    sanitize = Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_ADJUSTHS ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE
     try:
         mol = Chem.MolFromSmiles(smile)
         Chem.rdmolops.SanitizeMol(mol, sanitizeOps=sanitize)
