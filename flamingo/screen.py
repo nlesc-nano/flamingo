@@ -14,7 +14,7 @@ import sys
 from functools import partial
 from multiprocessing import Pool
 from pathlib import Path
-from typing import Any, Callable, FrozenSet, Iterator, List, Mapping, Optional, Tuple
+from typing import Any, FrozenSet, List, Mapping, Tuple
 
 import numpy as np
 import pandas as pd
@@ -25,8 +25,7 @@ from .features.featurizer import generate_fingerprints
 from .log_config import configure_logger
 from .models.scscore import SCScorer
 from .schemas import validate_input
-from .utils import (Options, get_number_of_smiles, read_molecules_in_batches,
-                    take)
+from .utils import Options, read_molecules_in_batches, read_smile_and_sanitize, take
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +54,6 @@ def split_filter_in_batches(opts: Options) -> None:
         # removed the computed batches
         take(smiles, computed_batches - 1)
 
-
     tasks = enumerate(smiles, start=computed_batches)
     if not opts.parallel:
         # Run batches sequential in a single CPU
@@ -63,7 +61,7 @@ def split_filter_in_batches(opts: Options) -> None:
             compute_batch(opts.to_dict(), result_path, (k, batch))
     else:
         # Run in Multiple CPUs
-        worker = partial(compute_batch,opts.to_dict(), result_path)
+        worker = partial(compute_batch, opts.to_dict(), result_path)
         with Pool() as p:
             list(p.imap_unordered(worker, tasks, 1))
 
@@ -116,7 +114,7 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
         "exclude_functional_groups": exclude_functional_groups,
         "bulkiness": filter_by_bulkiness,
         "scscore": filter_by_scscore
-        }
+    }
 
     for key in opts.filters.keys():
         if key in available_filters:
@@ -148,7 +146,7 @@ def exclude_functional_groups(molecules: pd.DataFrame, opts: Options) -> pd.Data
 
 
 def filter_single_group(
-    molecules: pd.DataFrame, groups: List[str], exclude: bool) -> pd.DataFrame:
+        molecules: pd.DataFrame, groups: List[str], exclude: bool) -> pd.DataFrame:
     """Check that the molecule has a single functional group."""
     # First filter the molecules that have the target functional groups
     molecules = filter_by_functional_group(molecules, groups, False)
@@ -161,7 +159,7 @@ def filter_single_group(
 
 
 def filter_by_functional_group(
-    molecules: pd.DataFrame, groups: List[str], exclude: bool) -> pd.DataFrame:
+        molecules: pd.DataFrame, groups: List[str], exclude: bool) -> pd.DataFrame:
     """Search for a set of functional_groups."""
     # Transform functional_groups to rkdit molecules
     patterns = frozenset(Chem.MolFromSmarts(f) for f in groups)
@@ -253,20 +251,9 @@ def create_ouput_file(result_path: Path, k: int) -> Path:
     return parent / "candidates.csv"
 
 
-def read_smile_and_sanitize(smile: str) -> Optional[Chem.rdchem.Mol]:
-    """Try to read and sanitize a given smile"""
-    sanitize = Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_ADJUSTHS
-    try:
-        mol = Chem.MolFromSmiles(smile)
-        Chem.rdmolops.SanitizeMol(mol, sanitizeOps=sanitize)
-    except:
-        mol = None
-    return mol
-
-
 def merge_result():
     """Merge all the results file into a single one in the CWD."""
-    files = [pd.read_csv(p,index_col=0) for p in Path("results").glob("batch_*/candidates.csv")]
+    files = [pd.read_csv(p, index_col=0) for p in Path("results").glob("batch_*/candidates.csv")]
     if files:
         results = pd.concat(files)
         results.to_csv("FinalResults.csv", index=False)
