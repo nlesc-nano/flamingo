@@ -218,3 +218,17 @@ def test_drug_likeness_defaults(tmp_path: Path) -> None:
         'O=C(O)CS', 'O=C(O)c1ccccc1Nc1ccccc1', 'O=C(O)C1CCC1(F)F', 'NCCc1ccncc1',
         'O=C(O)c1cccc(C(=O)O)c1'})
     check_expected(opts, expected)
+
+
+def test_drug_likeness_MW(tmp_path: Path) -> None:
+    """Check the interface to the calculation of the Drug-likeness properties."""
+    smiles_file = "smiles_multiple_groups.csv"
+    filters = {"drug_likeness": {
+        "MW": {"greater_than": 50}
+    }}
+    opts = create_options(filters, smiles_file, tmp_path)
+
+    expected = frozenset({
+        'O=C(O)CS', 'O=C(O)c1ccccc1Nc1ccccc1', 'O=C(O)C1CCC1(F)F', 'NCCc1ccncc1',
+        'O=C(O)c1cccc(C(=O)O)c1'})
+    check_expected(opts, expected)
