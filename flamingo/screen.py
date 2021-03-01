@@ -19,6 +19,7 @@ from typing import Any, FrozenSet, List, Mapping, Tuple
 import numpy as np
 import pandas as pd
 from rdkit import Chem
+from rdkit.Chem import QED
 
 from .cat_interface import compute_bulkiness
 from .features.featurizer import generate_fingerprints
@@ -28,6 +29,8 @@ from .schemas import validate_input
 from .utils import Options, read_molecules_in_batches, read_smile_and_sanitize, take
 
 logger = logging.getLogger(__name__)
+
+KEYS_DRUGS_LIKENESS = ["MW", "ALOGP", "HBA", "HBD", "PSA", "ROTB", "AROM", "ALERTS"]
 
 
 def split_filter_in_batches(opts: Options) -> None:
@@ -113,7 +116,8 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
         "include_functional_groups": include_functional_groups,
         "exclude_functional_groups": exclude_functional_groups,
         "bulkiness": filter_by_bulkiness,
-        "scscore": filter_by_scscore
+        "scscore": filter_by_scscore,
+        "drug_likeness": filter_by_drug_likeness
     }
 
     for key in opts.filters.keys():
@@ -122,7 +126,8 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
             if molecules.empty:
                 print("There no more molecules to perform the filter in the batch!")
 
-    columns = [x for x in ("smiles", 'scscore', 'bulkiness') if x in molecules.columns]
+    all_keys = ["smiles", 'scscore', 'bulkiness'] + KEYS_DRUGS_LIKENESS
+    columns = [x for x in all_keys if x in molecules.columns]
     molecules.to_csv(output_file, columns=columns)
     logger.debug(f"The filtered candidates has been written to the {output_file} file!")
 
@@ -211,7 +216,7 @@ def filter_by_bulkiness(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
     opts.bulkiness = True
     molecules["bulkiness"] = compute_bulkiness(molecules.smiles, opts)
     logger.debug("CAT has been called!")
-    return apply_predicate(molecules, "bulkiness", opts)
+    return apply_predicate(molecules, "bulkiness", opts.filters["bulkiness"])
 
 
 def filter_by_scscore(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
@@ -222,18 +227,35 @@ def filter_by_scscore(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
     fingerprints = generate_fingerprints(molecules.rdkit_molecules, "morgan", 1024, use_chirality=True)
     molecules["scscore"] = scorer.compute_score(fingerprints)
 
-    return apply_predicate(molecules, "scscore", opts)
+    return apply_predicate(molecules, "scscore", opts.filters["scscore"])
 
 
-def apply_predicate(molecules: pd.DataFrame, feature: str, opts: Options) -> pd.Series:
+def filter_by_drug_likeness(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
+    """compute the drug-likeness properties using rdkit."""
+    properties = molecules.rdkit_molecules.apply(compute_druglikeness)
+    properties = pd.DataFrame.from_records(properties, columns=KEYS_DRUGS_LIKENESS) 
+    molecules = pd.concat((molecules, properties), axis=1)
+    for feature, predicate in opts.filters.drug_likeness.items():
+        if predicate is not None:
+            molecules = apply_predicate(molecules, feature, predicate)
+
+    return molecules
+
+
+def compute_druglikeness(mol: Chem.rdchem.Mol):
+    """Call RDKit to compute the drug likeness properties."""
+    data = QED.properties(mol)
+    return [getattr(data, key) for key in KEYS_DRUGS_LIKENESS]
+
+
+def apply_predicate(molecules: pd.DataFrame, feature: str, predicate_info: Options) -> pd.DataFrame:
     """Apply `predicate_type` on `column_name`."""
 
-    # Check if the molecules fulfill the bulkiness predicate
-    property_info = opts.filters[feature]
-    keywords = property_info.keys()
+    # Check if the molecules fulfill the predicate
+    keywords = predicate_info.keys()
 
     predicate = "lower_than" if "lower_than" in keywords else "greater_than"
-    limit = property_info[predicate]
+    limit = predicate_info[predicate]
     if predicate == "lower_than":
         has_pattern = molecules[feature] <= limit
     else:

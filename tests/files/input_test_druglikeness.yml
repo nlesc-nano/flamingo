@@ -1,0 +1,5 @@
+smiles_file:
+  tests/files/smiles_functional_groups.csv
+
+filters:
+  drug_likeness: {}

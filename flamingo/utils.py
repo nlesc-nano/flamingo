@@ -9,7 +9,7 @@ import pandas as pd
 from more_itertools import chunked
 from rdkit import Chem
 
-__all__ = ["Options", "get_number_of_smiles", "normalize_smiles", "read_molecules", "read_smile_and_sanitize"]
+__all__ = ["Options", "normalize_smiles", "read_molecules", "read_smile_and_sanitize"]
 
 
 class Options(dict):
@@ -100,12 +100,6 @@ def read_molecules_in_batches(input_file: Path, size: int) -> Iterator[Any]:
     # Skip first line with the header
     f.readline()
     return chunked(f.readlines(), size)
-
-
-def get_number_of_smiles(input_file: Path) -> int:
-    """Count the lines in `input_file`."""
-    output = getoutput(f"wc -l {input_file.absolute().as_posix()}")
-    return int(output.split()[0])
 
 
 def take(it: Iterator[Any], n: int) -> List[Any]:
