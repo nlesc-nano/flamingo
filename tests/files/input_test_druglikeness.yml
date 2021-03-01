@@ -2,4 +2,6 @@ smiles_file:
   tests/files/smiles_functional_groups.csv
 
 filters:
-  drug_likeness: {}
+  drug_likeness:
+    MW:
+      greater_than: 50
