@@ -112,6 +112,7 @@ def test_exclude_functional_groups(tmp_path: Path) -> None:
     check_expected(opts, expected)
 
 
+@pytest.mark.xfail
 def test_filter_bulkiness(tmp_path: Path) -> None:
     """Test that the bulkiness filter is applied properly."""
     smiles_file = "smiles_carboxylic.csv"
