@@ -112,6 +112,7 @@ def test_exclude_functional_groups(tmp_path: Path) -> None:
     check_expected(opts, expected)
 
 
+@pytest.mark.xfail
 def test_filter_bulkiness(tmp_path: Path) -> None:
     """Test that the bulkiness filter is applied properly."""
     smiles_file = "smiles_carboxylic.csv"
@@ -196,3 +197,38 @@ def test_multiple_anchor(tmp_path: Path) -> None:
 
     check_expected(opts, expected)
 
+
+def test_drug_likeness_input(mocker: MockFixture, tmp_path: Path) -> None:
+    """Check that the yaml input for drug likeness is correct."""
+    path_input = PATH_TEST / "input_test_druglikeness.yml"
+    mocker.patch("argparse.ArgumentParser.parse_args", return_value=argparse.Namespace(
+        i=path_input))
+
+    mocker.patch("flamingo.screen.split_filter_in_batches", return_value=None)
+    main()
+
+
+def test_drug_likeness_defaults(tmp_path: Path) -> None:
+    """Check the interface to the calculation of the Drug-likeness properties."""
+    smiles_file = "smiles_multiple_groups.csv"
+    filters = {"drug_likeness": {}}
+    opts = create_options(filters, smiles_file, tmp_path)
+
+    expected = frozenset({
+        'O=C(O)CS', 'O=C(O)c1ccccc1Nc1ccccc1', 'O=C(O)C1CCC1(F)F', 'NCCc1ccncc1',
+        'O=C(O)c1cccc(C(=O)O)c1'})
+    check_expected(opts, expected)
+
+
+def test_drug_likeness_MW(tmp_path: Path) -> None:
+    """Check the interface to the calculation of the Drug-likeness properties."""
+    smiles_file = "smiles_multiple_groups.csv"
+    filters = {"drug_likeness": {
+        "MW": {"greater_than": 50}
+    }}
+    opts = create_options(filters, smiles_file, tmp_path)
+
+    expected = frozenset({
+        'O=C(O)CS', 'O=C(O)c1ccccc1Nc1ccccc1', 'O=C(O)C1CCC1(F)F', 'NCCc1ccncc1',
+        'O=C(O)c1cccc(C(=O)O)c1'})
+    check_expected(opts, expected)

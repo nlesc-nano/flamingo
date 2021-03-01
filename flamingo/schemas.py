@@ -36,6 +36,18 @@ SCHEMA_FUNCTIONAL_GROUPS = Schema({
     Optional("maximum", default=1): Integral
 })
 
+#: Schema to compute the properties described at:
+#: https://www.rdkit.org/docs/source/rdkit.Chem.QED.html
+SCHEMA_DRUG_LIKENESS = Schema({
+    Optional("MW", default=None): Or(SCHEMA_ORDERING, None),
+    Optional("ALOGP", default=None): Or(SCHEMA_ORDERING, None),
+    Optional("HBA", default=None): Or(SCHEMA_ORDERING, None),
+    Optional("HBD", default=None): Or(SCHEMA_ORDERING, None),
+    Optional("PSA", default=None): Or(SCHEMA_ORDERING, None),
+    Optional("ROTB", default=None): Or(SCHEMA_ORDERING, None),
+    Optional("AROM", default=None): Or(SCHEMA_ORDERING, None),
+    Optional("ALERTS", default=None): Or(SCHEMA_ORDERING, None)
+})
 
 #: Schema to validate the filters to apply for screening
 SCHEMA_FILTERS = Schema({
@@ -49,8 +61,9 @@ SCHEMA_FILTERS = Schema({
     # Select smiles >, < or = to some value
     Optional("bulkiness"): SCHEMA_BULKINESS,
 
-    Optional("scscore"): SCHEMA_ORDERING
+    Optional("scscore"): SCHEMA_ORDERING,
 
+    Optional("drug_likeness", default=SCHEMA_DRUG_LIKENESS.validate({})): SCHEMA_DRUG_LIKENESS
 })
 
 #: Schema to validate the input for screening
