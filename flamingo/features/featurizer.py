@@ -14,19 +14,11 @@ import numpy as np
 import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from rdkit.DataStructs.cDataStructs import ExplicitBitVect
-from typing import Any, Tuple
-from typing_extensions import Protocol
+from typing import Tuple
 
 from .atomic_features import (ELEMENTS, BONDS, compute_hybridization_index, dict_element_features)
 
 __all__ = ["compute_molecular_graph_edges", "generate_fingerprints", "generate_molecular_features"]
-
-
-class FingerPrintCalculator(Protocol):
-    """Type representing the function to compute the fingerprint."""
-    def __call__(self, mol: Chem.rdchem.Mol, radious: int, nbits: int = 1024, **kwargs: Any) -> ExplicitBitVect:
-        ...
 
 
 dictionary_functions = {
