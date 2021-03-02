@@ -120,8 +120,8 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
         "drug_likeness": filter_by_drug_likeness
     }
 
-    for key in opts.filters.keys():
-        if key in available_filters:
+    for key, val in opts.filters.items():
+        if key in available_filters and val is not None:
             molecules = available_filters[key](molecules, opts)
             if molecules.empty:
                 print("There no more molecules to perform the filter in the batch!")

@@ -51,9 +51,6 @@ SCHEMA_DRUG_LIKENESS = Schema({
 
 #: Schema to validate the filters to apply for screening
 SCHEMA_FILTERS = Schema({
-    # Filter out molecules with more a given anchor
-    Optional("single_anchor", default=True): bool,
-
     # Include or exclude one or more functional group using smiles
     Optional("include_functional_groups"): SCHEMA_FUNCTIONAL_GROUPS,
     Optional("exclude_functional_groups"): SCHEMA_FUNCTIONAL_GROUPS,
@@ -63,7 +60,7 @@ SCHEMA_FILTERS = Schema({
 
     Optional("scscore"): SCHEMA_ORDERING,
 
-    Optional("drug_likeness", default=SCHEMA_DRUG_LIKENESS.validate({})): SCHEMA_DRUG_LIKENESS
+    Optional("drug_likeness", default=None): Or(SCHEMA_DRUG_LIKENESS, None)
 })
 
 #: Schema to validate the input for screening
