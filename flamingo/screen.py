@@ -244,8 +244,12 @@ def filter_by_drug_likeness(molecules: pd.DataFrame, opts: Options) -> pd.DataFr
 
 def compute_druglikeness(mol: Chem.rdchem.Mol):
     """Call RDKit to compute the drug likeness properties."""
-    data = QED.properties(mol)
-    return [getattr(data, key) for key in KEYS_DRUGS_LIKENESS]
+    try:
+        data = QED.properties(mol)
+        results = [getattr(data, key) for key in KEYS_DRUGS_LIKENESS]
+    except RuntimeError:
+        results = [None] * len(KEYS_DRUGS_LIKENESS)
+    return results
 
 
 def apply_predicate(molecules: pd.DataFrame, feature: str, predicate_info: Options) -> pd.DataFrame:
