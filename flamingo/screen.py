@@ -26,7 +26,8 @@ from .features.featurizer import generate_fingerprints
 from .log_config import configure_logger
 from .models.scscore import SCScorer
 from .schemas import validate_input
-from .utils import Options, read_molecules_in_batches, read_smile_and_sanitize, take
+from .utils import (Options, convert_to_standard_representation,
+                    read_molecules_in_batches, read_smile_and_sanitize, take)
 
 logger = logging.getLogger(__name__)
 
@@ -105,11 +106,7 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
     molecules["rdkit_molecules"] = converter(molecules.smiles)
 
     # Remove invalid molecules
-    molecules = molecules[molecules.rdkit_molecules.notnull()]
-
-    # Convert smiles to the standard representation
-    back_converter = np.vectorize(Chem.MolToSmiles)
-    molecules.smiles = back_converter(molecules.rdkit_molecules)
+    molecules = convert_to_standard_representation(molecules)
 
     # Apply all the filters
     available_filters = {

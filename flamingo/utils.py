@@ -9,7 +9,8 @@ import pandas as pd
 from more_itertools import chunked
 from rdkit import Chem
 
-__all__ = ["Options", "normalize_smiles", "read_molecules", "read_smile_and_sanitize"]
+__all__ = ["Options", "convert_to_standard_representation", "normalize_smiles",
+           "read_molecules", "read_smile_and_sanitize"]
 
 
 class Options(dict):
@@ -116,3 +117,23 @@ def read_smile_and_sanitize(smile: str) -> Optional[Chem.rdchem.Mol]:
     except:
         mol = None
     return mol
+
+
+def convert_to_standard_representation(molecules: pd.DataFrame) -> pd.DataFrame:
+    """Convert Smiles to standard representation."""
+    molecules.dropna(inplace=True)
+
+    # Convert smiles to the standard representation
+    back_converter = np.vectorize(mol2smile)
+    molecules.smiles = back_converter(molecules.rdkit_molecules)
+    molecules.dropna(inplace=True)
+    return molecules
+
+
+def mol2smile(mol: Chem.rdchem.Mol) -> Optional[str]:
+    """Return a smile representation if possible."""
+    try:
+        smile = Chem.MolToSmiles(mol)
+    except RuntimeError:
+        smile = None
+    return smile
