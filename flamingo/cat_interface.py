@@ -8,7 +8,6 @@ API
 import logging
 import shutil
 import uuid
-from collections import defaultdict
 from contextlib import redirect_stderr
 from functools import partial
 from multiprocessing import Pool
