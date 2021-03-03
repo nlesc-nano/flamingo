@@ -20,8 +20,8 @@ def test_molecular_features():
     # There are four heavy atoms with 17 atomic features each
     assert atomic.shape == (4, 17)
 
-    # There are 3 x 2 bidirectional edges (Bonds) with 7 features each
-    assert bond.shape == (6, 7)
+    # There are 3 x 2 bidirectional edges (Bonds) with 6 features each
+    assert bond.shape == (6, 6)
 
     # All entries in the matrix are different of Nan
     assert not np.all(np.isnan(atomic))
