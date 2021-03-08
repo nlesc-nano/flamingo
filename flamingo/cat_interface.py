@@ -153,6 +153,7 @@ def compute_property_using_cat(
 
     return df
 
+
 def extract_dataframe_from_hdf5(path_hdf5: Path, metadata: PropertyMetadata) -> pd.DataFrame:
     """Get a Dataframe from the CAT HDF5 results."""
     with h5py.File(path_hdf5, 'r') as f:
@@ -170,7 +171,6 @@ def extract_dataframe_from_hdf5(path_hdf5: Path, metadata: PropertyMetadata) -> 
     df.drop_duplicates(subset=['ligand'], keep='first', inplace=True)
 
     return df
-
 
 
 def compute_batch_bulkiness(
