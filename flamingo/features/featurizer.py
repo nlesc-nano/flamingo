@@ -31,7 +31,7 @@ dictionary_functions = {
 # is_aromatic
 NUMBER_ATOMIC_GRAPH_FEATURES = len(ELEMENTS) + 8
 # Bond_type(4) + same_ring + distance
-NUMBER_BOND_GRAPH_FEATURES = len(BONDS) + 2
+NUMBER_BOND_GRAPH_FEATURES = len(BONDS) + 3
 # Concatenation of both features set
 NUMBER_GRAPH_FEATURES = NUMBER_ATOMIC_GRAPH_FEATURES + NUMBER_BOND_GRAPH_FEATURES
 
@@ -94,10 +94,10 @@ def generate_bond_features(mol: Chem.rdchem.Mol, bond: Chem.rdchem.Bond) -> np.n
     # Is the bond conjugated
     bond_features[5] = float(bond.GetIsConjugated())
 
-    # # Distance
-    # begin = bond.GetBeginAtom().GetIdx()
-    # end = bond.GetEndAtom().GetIdx()
-    # bond_features[6] = Chem.rdMolTransforms.GetBondLength(mol.GetConformer(), begin, end)
+    # Distance
+    begin = bond.GetBeginAtom().GetIdx()
+    end = bond.GetEndAtom().GetIdx()
+    bond_features[6] = Chem.rdMolTransforms.GetBondLength(mol.GetConformer(), begin, end)
 
     return bond_features
 
