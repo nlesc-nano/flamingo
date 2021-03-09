@@ -229,6 +229,7 @@ def filter_by_scscore(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
 
 def filter_by_drug_likeness(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
     """compute the drug-likeness properties using rdkit."""
+    molecules.reset_index(drop=True, inplace=True)
     properties = molecules.rdkit_molecules.apply(compute_druglikeness)
     properties = pd.DataFrame.from_records(properties, columns=KEYS_DRUGS_LIKENESS) 
     molecules = pd.concat((molecules, properties), axis=1)
