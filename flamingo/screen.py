@@ -119,6 +119,7 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
 
     for key, val in opts.filters.items():
         if key in available_filters and val is not None:
+            molecules.reset_index(drop=True, inplace=True) # throw away all indices
             molecules = available_filters[key](molecules, opts)
             if molecules.empty:
                 print("There no more molecules to perform the filter in the batch!")
