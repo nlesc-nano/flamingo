@@ -119,6 +119,7 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
 
     for key, val in opts.filters.items():
         if key in available_filters and val is not None:
+            molecules.reset_index(drop=True, inplace=True) # throw away all indices
             molecules = available_filters[key](molecules, opts)
             if molecules.empty:
                 print("There no more molecules to perform the filter in the batch!")
@@ -229,7 +230,6 @@ def filter_by_scscore(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
 
 def filter_by_drug_likeness(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
     """compute the drug-likeness properties using rdkit."""
-    molecules.reset_index(drop=True, inplace=True)
     properties = molecules.rdkit_molecules.apply(compute_druglikeness)
     properties = pd.DataFrame.from_records(properties, columns=KEYS_DRUGS_LIKENESS) 
     molecules = pd.concat((molecules, properties), axis=1)
