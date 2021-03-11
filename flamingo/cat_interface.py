@@ -225,13 +225,13 @@ def compute_bulkiness(smiles: pd.Series, opts: Options) -> np.ndarray:
     return results
 
 
-def compute_cosmo_rs(smiles: pd.Series, solvents: Dict[str, str], workdir: str) -> pd.DataFrame:
+def compute_cosmo_rs(molecules: pd.DataFrame, solvents: Dict[str, str], workdir: str) -> pd.DataFrame:
     """Compute Cosmo Rs properties using CAT.
 
     Parameters
     ----------
-    smiles
-        Pandas.Series with the smiles to compute
+    molecules
+        Pandas.DataFrame with the smiles to compute
     solvents
         Dictionary with the Paths to the solvents data
     workdir
@@ -249,7 +249,14 @@ def compute_cosmo_rs(smiles: pd.Series, solvents: Dict[str, str], workdir: str) 
     >>> compute_cosmo_rs(smiles, solvents, Path("."))
 
     """
-    output_dir = tempfile.mkdtemp(prefix="cosmo_rs_", dir=workdir)
-    df = run_fast_sigma(smiles.to_list(), solvents, output_dir=output_dir, return_df=True)
-    df.sort_index(inplace=True)
-    return df
+    output_dir = Path(tempfile.mkdtemp(prefix="cosmo_rs_", dir=workdir))
+    try:
+        rs = run_fast_sigma(molecules.smiles, solvents, output_dir=output_dir, return_df=True)
+        molecules = pd.merge(molecules, rs, left_on="smiles", right_index=True)
+    except RuntimeError:
+        pass
+    finally:
+        shutil.rmtree(output_dir)
+
+
+    return molecules

@@ -24,12 +24,15 @@ def run_workflow(opts: Options) -> pd.DataFrame:
     """Apply the filters and read the output."""
     split_filter_in_batches(opts)
     path = Path("results/batch_0/candidates.csv")
-    filter_mols = read_molecules(path)
-    print("Result path: ", path)
-    return filter_mols
+    if path.exists():
+        filter_mols = read_molecules(path)
+        return filter_mols
+    else:
+        raise RuntimeError("There is no Path to results")
 
 
-def create_options(filters: Mapping[str, Any], smiles_file: str, tmp_path: Path) -> Options:
+def create_options(
+        filters: Mapping[str, Any], smiles_file: str, tmp_path: Path, sanitize: bool = False) -> Options:
     """Create Options object to filter."""
     opts = Options()
     opts.smiles_file = (PATH_TEST / smiles_file).absolute().as_posix()
@@ -37,6 +40,7 @@ def create_options(filters: Mapping[str, Any], smiles_file: str, tmp_path: Path)
     opts.output_path = "results"
     opts.workdir = tmp_path
     opts.batch_size = 100
+    opts.sanitize_smiles = sanitize
     opts.parallel = np.random.choice([True, False])
 
     return opts
@@ -93,7 +97,7 @@ def test_contain_functional_groups(tmp_path: Path) -> None:
     """Test that the functional group filter is applied properly."""
     smiles_file = "smiles_functional_groups.csv"
     filters = {"include_functional_groups": {"groups": ["[CX3](=O)[OX2H1]"],"maximum": 1}}
-    opts = create_options(filters, smiles_file, tmp_path)
+    opts = create_options(filters, smiles_file, tmp_path, sanitize=True)
     expected = frozenset({"O=C(O)C1CNC2C3CC4C2N4C13", "C#CC12CC(CO1)NCC2C(=O)O",
                 "CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O",
                 "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"})
@@ -106,7 +110,7 @@ def test_exclude_functional_groups(tmp_path: Path) -> None:
     smiles_file = "smiles_functional_groups.csv"
     filters = {"exclude_functional_groups": {"groups": [
         "[#7][#6](=[OX1])", "C#C", "[#6](=[OX1])[OX2][#6]", "[NX3]"], "maximum": 1}}
-    opts = create_options(filters, smiles_file, tmp_path)
+    opts = create_options(filters, smiles_file, tmp_path, sanitize=True)
     expected = frozenset({"c1ccccc1", "CCO", "CCCCCCCCC=CCCCCCCCC(=O)O",
                 "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"})
     check_expected(opts, expected)
@@ -117,7 +121,7 @@ def test_filter_bulkiness(tmp_path: Path) -> None:
     """Test that the bulkiness filter is applied properly."""
     smiles_file = "smiles_carboxylic.csv"
     filters = {"bulkiness": {"h_lim": None, "d": "auto", "lower_than": 20}}
-    opts = create_options(filters, smiles_file, tmp_path)
+    opts = create_options(filters, smiles_file, tmp_path, sanitize=True)
     opts.core = PATH_TEST / "Cd68Se55.xyz"
     opts.anchor = "O(C=O)[H]"
 
@@ -129,7 +133,7 @@ def test_filter_bulkiness_no_core(tmp_path: Path) -> None:
     """Test that the bulkiness filter is applied properly."""
     smiles_file = "smiles_carboxylic.csv"
     filters = {"bulkiness": {"h_lim": None, "lower_than": 20}}
-    opts = create_options(filters, smiles_file, tmp_path)
+    opts = create_options(filters, smiles_file, tmp_path, sanitize=True)
     opts.anchor = "O(C=O)[H]"
 
     expected = frozenset()  # type: FrozenSet[str]
@@ -145,7 +149,7 @@ def test_filter_scscore_lower(tmp_path: Path) -> None:
     """Test that the scscore filter is applied properly."""
     smiles_file = "smiles_carboxylic.csv"
     filters = {"scscore": {"lower_than": 1.3}}
-    opts = create_options(filters, smiles_file, tmp_path)
+    opts = create_options(filters, smiles_file, tmp_path, sanitize=True)
 
     expected = frozenset({"CC(=O)O"})
     check_expected(opts, expected)
@@ -155,7 +159,7 @@ def test_filter_scscore_greater(tmp_path: Path) -> None:
     """Test that the scscore filter is applied properly."""
     smiles_file = "smiles_functional_groups.csv"
     filters = {"scscore": {"greater_than": 3.0}}
-    opts = create_options(filters, smiles_file, tmp_path)
+    opts = create_options(filters, smiles_file, tmp_path, sanitize=True)
 
     expected = frozenset({"O=C(O)C1CNC2C3CC4C2N4C13"})
     check_expected(opts, expected)
@@ -165,7 +169,7 @@ def test_single_carboxylic(tmp_path: Path) -> None:
     """Check that only molecules with a single Carboxylic acids are included."""
     smiles_file = "smiles_carboxylic.csv"
     filters = {"include_functional_groups": {"groups": ["[CX3](=O)[OX2H1]"], "maximum": 1}}
-    opts = create_options(filters, smiles_file, tmp_path)
+    opts = create_options(filters, smiles_file, tmp_path, sanitize=True)
     opts.anchor = "O(C=O)[H]"
 
     expected = frozenset({"CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O"})
@@ -189,11 +193,12 @@ def test_multiple_anchor(tmp_path: Path) -> None:
     """Check that molecules with multiple Carboxylic acids are included."""
     smiles_file = "smiles_carboxylic.csv"
     filters = {"include_functional_groups": {"groups": ["[CX3](=O)[OX2H1]"], "maximum": 2}}
-    opts = create_options(filters, smiles_file, tmp_path)
+    opts = create_options(filters, smiles_file, tmp_path, sanitize=True)
     opts.anchor = "O(C=O)[H]"
 
     expected = frozenset({
-        "CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O", "O=C(O)c1cccc(C(=O)O)c1"})
+                "CCCCCCCCC=CCCCCCCCC(=O)O", "CC(=O)O", "O=C(O)Cc1ccccc1", "CC(O)C(=O)O",
+                 "O=C(O)c1cccc(C(=O)O)c1"})
 
     check_expected(opts, expected)
 
@@ -215,8 +220,9 @@ def test_drug_likeness_defaults(tmp_path: Path) -> None:
     opts = create_options(filters, smiles_file, tmp_path)
 
     expected = frozenset({
-        'O=C(O)CS', 'O=C(O)c1ccccc1Nc1ccccc1', 'O=C(O)C1CCC1(F)F', 'NCCc1ccncc1',
-        'O=C(O)c1cccc(C(=O)O)c1'})
+        'O=C(O)CS', 'OC(=O)c1ccccc1Nc1ccccc1', 'O=C(O)C1CCC1(F)F', 'NCCc1ccncc1',
+        'C1=CC(=CC(=C1)C(=O)O)C(=O)O'})
+
     check_expected(opts, expected)
 
 
@@ -229,8 +235,9 @@ def test_drug_likeness_MW(tmp_path: Path) -> None:
     opts = create_options(filters, smiles_file, tmp_path)
 
     expected = frozenset({
-        'O=C(O)CS', 'O=C(O)c1ccccc1Nc1ccccc1', 'O=C(O)C1CCC1(F)F', 'NCCc1ccncc1',
-        'O=C(O)c1cccc(C(=O)O)c1'})
+        'O=C(O)CS', 'OC(=O)c1ccccc1Nc1ccccc1', 'O=C(O)C1CCC1(F)F', 'NCCc1ccncc1',
+        'C1=CC(=CC(=C1)C(=O)O)C(=O)O'})
+
     check_expected(opts, expected)
 
 
@@ -242,11 +249,11 @@ def test_cosmo_rs(tmp_path: Path, mocker: MockFixture) -> None:
     }
 
     # Mock the call to cosmo-rs
-    df = pd.read_csv(PATH_TEST / smiles_file)
-    mocker.patch("flamingo.cat_interface.compute_cosmo_rs", return_value=df)
+    df = pd.read_csv(PATH_TEST / "output_cosmo_rs.csv", header=[0, 1], index_col=0)
+    mocker.patch("flamingo.cat_interface.run_fast_sigma", return_value=df)
     opts = create_options(filters, smiles_file, tmp_path)
     expected = frozenset({
-        'O=C(O)CS', 'O=C(O)c1ccccc1Nc1ccccc1', 'O=C(O)C1CCC1(F)F', 'NCCc1ccncc1',
-        'O=C(O)c1cccc(C(=O)O)c1'})
+        'O=C(O)CS', 'OC(=O)c1ccccc1Nc1ccccc1', 'O=C(O)C1CCC1(F)F', 'NCCc1ccncc1',
+        'C1=CC(=CC(=C1)C(=O)O)C(=O)O'})
 
-    # check_expected(opts, expected)
+    check_expected(opts, expected)

@@ -106,7 +106,7 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
     molecules["rdkit_molecules"] = converter(molecules.smiles)
 
     # Remove invalid molecules
-    molecules = convert_to_standard_representation(molecules)
+    molecules = convert_to_standard_representation(molecules, opts.sanitize_smiles)
 
     # Apply all the filters
     available_filters = {
@@ -253,8 +253,7 @@ def compute_druglikeness(mol: Chem.rdchem.Mol):
 
 def filter_by_cosmo_rs(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
     """Compute Cosmo RS properties using CAT."""
-    df = compute_cosmo_rs(molecules.smiles, opts.filters.cosmo_rs["solvents"], opts.workdir)
-    raise RuntimeError("BOOM")
+    return compute_cosmo_rs(molecules, opts.filters.cosmo_rs["solvents"], opts.workdir)
 
 
 def apply_predicate(molecules: pd.DataFrame, feature: str, predicate_info: Options) -> pd.DataFrame:

@@ -80,7 +80,6 @@ SCHEMA_SCREEN = Schema({
     # Functional group used as anchor
     Optional("anchor", default="O(C=O)[H]"): str,
 
-
     # path to the molecular coordinates of the Core to attach the ligands
     Optional("core"): str,
 
@@ -94,7 +93,11 @@ SCHEMA_SCREEN = Schema({
     Optional("batch_size", default=1000): int,
 
     # Run filters in Parallel
-    Optional("parallel", default=True): bool
+    Optional("parallel", default=True): bool,
+
+    # Clean up the smiles
+    Optional("sanitize_smiles", default=False): bool
+
 })
 
 DICT_ACTIONS = {"screen": SCHEMA_SCREEN}
