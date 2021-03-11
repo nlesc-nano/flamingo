@@ -49,7 +49,9 @@ class PropertyMetadata(NamedTuple):
     dset: str  # Dset in the HDF5
 
 
-def call_cat(smiles: pd.Series, opts: Mapping[str, Any], cat_properties: Dict[str, Any]) -> Tuple[Path, Path]:
+def call_cat(
+        smiles: pd.Series, opts: Mapping[str, Any],
+        cat_properties: Dict[str, Any]) -> Tuple[Path, Path]:
     """Call cat with a given `config` and returns a dataframe with the results.
 
     Parameters
@@ -225,7 +227,8 @@ def compute_bulkiness(smiles: pd.Series, opts: Options) -> np.ndarray:
     return results
 
 
-def compute_cosmo_rs(molecules: pd.DataFrame, solvents: Dict[str, str], workdir: str) -> pd.DataFrame:
+def compute_cosmo_rs(
+        molecules: pd.DataFrame, solvents: Dict[str, str], workdir: str) -> pd.DataFrame:
     """Compute Cosmo Rs properties using CAT.
 
     Parameters
@@ -249,14 +252,11 @@ def compute_cosmo_rs(molecules: pd.DataFrame, solvents: Dict[str, str], workdir:
     >>> compute_cosmo_rs(smiles, solvents, Path("."))
 
     """
-    output_dir = Path(tempfile.mkdtemp(prefix="cosmo_rs_", dir=workdir))
     try:
-        rs = run_fast_sigma(molecules.smiles, solvents, output_dir=output_dir, return_df=True)
-        molecules = pd.merge(molecules, rs, left_on="smiles", right_index=True)
+        with tempfile.TemporaryDirectory(prefix="cosmo_rs_", dir=workdir) as output_dir:
+            rs = run_fast_sigma(molecules.smiles, solvents, output_dir=output_dir, return_df=True)
+            molecules = pd.merge(molecules, rs, left_on="smiles", right_index=True)
     except RuntimeError:
         pass
-    finally:
-        shutil.rmtree(output_dir)
-
 
     return molecules
