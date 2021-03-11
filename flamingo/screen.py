@@ -241,12 +241,6 @@ def filter_by_drug_likeness(molecules: pd.DataFrame, opts: Options) -> pd.DataFr
     return molecules
 
 
-def filter_by_cosmo_rs(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
-    """Compute Cosmo RS properties using CAT."""
-    df = compute_cosmo_rs(molecules.smiles)
-    raise RuntimeError("BOOM")
-
-
 def compute_druglikeness(mol: Chem.rdchem.Mol):
     """Call RDKit to compute the drug likeness properties."""
     try:
@@ -255,6 +249,12 @@ def compute_druglikeness(mol: Chem.rdchem.Mol):
     except RuntimeError:
         results = [None] * len(KEYS_DRUGS_LIKENESS)
     return results
+
+
+def filter_by_cosmo_rs(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
+    """Compute Cosmo RS properties using CAT."""
+    df = compute_cosmo_rs(molecules.smiles, opts.filters.cosmo_rs["solvents"])
+    raise RuntimeError("BOOM")
 
 
 def apply_predicate(molecules: pd.DataFrame, feature: str, predicate_info: Options) -> pd.DataFrame:

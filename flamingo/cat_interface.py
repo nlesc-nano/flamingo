@@ -224,28 +224,26 @@ def compute_bulkiness(smiles: pd.Series, opts: Options) -> np.ndarray:
     return results
 
 
-def compute_cosmo_rs(smiles: pd.Series) -> pd.DataFrame:
+def compute_cosmo_rs(smiles: pd.Series, solvents: Dict[str, str]) -> pd.DataFrame:
     """Compute Cosmo Rs properties using CAT.
 
     Parameters
     ----------
     smiles
         Pandas.Series with the smiles to compute
-    opts
-        Options to call CAT
-
+    solvents
+        Dictionary with the Paths to the solvents data
     Returns
     -------
     pandas.DataFrame 
         Values
 
+    example:
+    >>> smiles = pd.Series(['CO'])
+    >>> solvents = {"hexane": "$AMSRESOURCES/ADFCRS/Hexane.coskf",
+                    "toluene": "$AMSRESOURCES/ADFCRS/Toluene.coskf"}
+    >>> compute_cosmo_rs(smiles, solvents)
+
     """
-    solvent_dict = {
-        "hexane": "$AMSRESOURCES/ADFCRS/Hexane.coskf",
-        "octadecene": "$AMSRESOURCES/ADFCRS/1-Octadecene.coskf",
-        "toluene": "$AMSRESOURCES/ADFCRS/Toluene.coskf",
-        "o-xylene": "$AMSRESOURCES/ADFCRS/o-Xylene.coskf",
-        "acetonitrile": "$AMSRESOURCES/ADFCRS/acetonitrile.coskf"
-    }
-    run_fast_sigma(smiles.to_list(), solvent_dict)
+    run_fast_sigma(smiles.to_list(), solvents)
     return pd.read_csv("cosmo-rs.csv", header=[0, 1], index_col=0)

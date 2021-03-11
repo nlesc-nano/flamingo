@@ -49,6 +49,10 @@ SCHEMA_DRUG_LIKENESS = Schema({
     Optional("ALERTS", default=None): Or(SCHEMA_ORDERING, None)
 })
 
+SCHEMA_COSMO_RS = Schema({
+    "solvents": dict,
+})
+
 #: Schema to validate the filters to apply for screening
 SCHEMA_FILTERS = Schema({
     # Include or exclude one or more functional group using smiles
@@ -62,7 +66,7 @@ SCHEMA_FILTERS = Schema({
 
     Optional("drug_likeness", default=None): Or(SCHEMA_DRUG_LIKENESS, None),
 
-    Optional("cosmo_rs", default={}): dict,
+    Optional("cosmo_rs"): SCHEMA_COSMO_RS
 })
 
 #: Schema to validate the input for screening

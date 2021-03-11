@@ -232,3 +232,21 @@ def test_drug_likeness_MW(tmp_path: Path) -> None:
         'O=C(O)CS', 'O=C(O)c1ccccc1Nc1ccccc1', 'O=C(O)C1CCC1(F)F', 'NCCc1ccncc1',
         'O=C(O)c1cccc(C(=O)O)c1'})
     check_expected(opts, expected)
+
+
+def test_cosmo_rs(tmp_path: Path, mocker: MockFixture) -> None:
+    """Mock the call to cosmo rs."""
+    smiles_file = "smiles_multiple_groups.csv"
+    filters = {"cosmo_rs": {
+        "solvents": {"benzene": "$AMSRESOURCES/ADFCRS/Benzene.coskf"}}
+    }
+
+    # Mock the call to cosmo-rs
+    df = pd.read_csv(PATH_TEST / smiles_file)
+    mocker.patch("flamingo.cat_interface.compute_cosmo_rs", return_value=df)
+    opts = create_options(filters, smiles_file, tmp_path)
+    expected = frozenset({
+        'O=C(O)CS', 'O=C(O)c1ccccc1Nc1ccccc1', 'O=C(O)C1CCC1(F)F', 'NCCc1ccncc1',
+        'O=C(O)c1cccc(C(=O)O)c1'})
+
+    # check_expected(opts, expected)
