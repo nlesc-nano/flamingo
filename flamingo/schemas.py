@@ -60,7 +60,9 @@ SCHEMA_FILTERS = Schema({
 
     Optional("scscore"): SCHEMA_ORDERING,
 
-    Optional("drug_likeness", default=None): Or(SCHEMA_DRUG_LIKENESS, None)
+    Optional("drug_likeness", default=None): Or(SCHEMA_DRUG_LIKENESS, None),
+
+    Optional("cosmo_rs", default={}): dict,
 })
 
 #: Schema to validate the input for screening

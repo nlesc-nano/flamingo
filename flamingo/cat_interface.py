@@ -21,6 +21,7 @@ import yaml
 from CAT.base import prep
 from dataCAT import prop_to_dataframe
 from more_itertools import chunked
+from nanoCAT.recipes import run_fast_sigma
 from scm.plams import Settings
 
 from .utils import Options, normalize_smiles
@@ -94,7 +95,6 @@ optional:
     qd:
        {generate_bulkiness_section(cat_properties)}
     ligand:
-       {generate_cosmo_section(cat_properties)}
        functional_groups:
           ['{opts["anchor"]}']
     database:
@@ -128,14 +128,6 @@ def generate_bulkiness_section(cat_properties: Dict[str, Any]) -> str:
     for key in {"h_lim", "d"}:
         string += f"{' ':>10}{key}: {replace_None(bulkiness[key])}\n"
     return string
-
-
-def generate_cosmo_section(cat_properties: Dict[str, Any]) -> str:
-    """Generate the CAT cosmo-rs input section."""
-    if "cosmo-rs" in cat_properties:
-        return "cosmo-rs: True"
-    else:
-        return "cosmo-rs: False"
 
 
 def compute_property_using_cat(
@@ -195,19 +187,6 @@ def compute_batch_bulkiness(
     return values
 
 
-def compute_batch_cosmo_rs(
-        smiles: pd.Series, opts: Mapping[str, Any], indices: pd.Index) -> pd.Series:
-    """Compute the cosmo_rs properties of the `smiles` with `indices`."""
-    # chunk = smiles[indices]
-    # chunk_name = str(indices[0])
-
-    # # compute and extract the bulkiness
-    # metadata = PropertyMetadata("gamma", 'qd/properties/V_bulk')
-    # df = compute_property_using_cat(chunk, opts, chunk_name, metadata)
-
-    raise NotImplementedError
-
-
 def map_reduce(smiles: pd.Series, opts: Options,
                callback: Callback, reduce: Reducer) -> BatchResult:
     """Distribute the properties computation in batches."""
@@ -245,10 +224,8 @@ def compute_bulkiness(smiles: pd.Series, opts: Options) -> np.ndarray:
     return results
 
 
-def compute_cosmo_rs(smiles: pd.Series, opts: Options) -> pd.DataFrame:
-    """Compute bulkiness using CAT.
-
-    It creates several instances of CAT using multiprocessing.
+def compute_cosmo_rs(smiles: pd.Series) -> pd.DataFrame:
+    """Compute Cosmo Rs properties using CAT.
 
     Parameters
     ----------
@@ -263,6 +240,12 @@ def compute_cosmo_rs(smiles: pd.Series, opts: Options) -> pd.DataFrame:
         Values
 
     """
-    results = map_reduce(smiles, opts, compute_batch_cosmo_rs, pd.concat)
-
-    return results
+    solvent_dict = {
+        "hexane": "$AMSRESOURCES/ADFCRS/Hexane.coskf",
+        "octadecene": "$AMSRESOURCES/ADFCRS/1-Octadecene.coskf",
+        "toluene": "$AMSRESOURCES/ADFCRS/Toluene.coskf",
+        "o-xylene": "$AMSRESOURCES/ADFCRS/o-Xylene.coskf",
+        "acetonitrile": "$AMSRESOURCES/ADFCRS/acetonitrile.coskf"
+    }
+    run_fast_sigma(smiles.to_list(), solvent_dict)
+    return pd.read_csv("cosmo-rs.csv", header=[0, 1], index_col=0)

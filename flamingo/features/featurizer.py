@@ -42,7 +42,7 @@ NUMBER_GRAPH_FEATURES = NUMBER_ATOMIC_GRAPH_FEATURES + NUMBER_BOND_GRAPH_FEATURE
 def generate_molecular_features(mol: Chem.rdchem.Mol) -> Tuple[np.ndarray, np.ndarray]:
     """Generate both atomic and atom-pair features excluding the hydrogens.
 
-    Atom types: C N O F P S Cl Br I.
+    Atom types: H C N O F P S Cl Br I.
 
     Atomic features,
 
