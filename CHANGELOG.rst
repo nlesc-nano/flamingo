@@ -9,7 +9,8 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 ******************
 * Run all the filters in parallel (#38)
 * Filter molecules with a single functional group (#43)
-
+* Add interface to cosmo-rs (#5)
+  
 0.2.1 [14/01/2021]
 ******************
 Change

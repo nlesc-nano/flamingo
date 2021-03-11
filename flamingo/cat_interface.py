@@ -171,7 +171,7 @@ def compute_batch_bulkiness(
     """Compute bulkiness using CAT."""
     chunk = smiles[indices]
 
-    # Transform the smiles to normal representation
+    # Transform the smiles to standard representation
     chunk = chunk.apply(normalize_smiles)
 
     # compute and extract the bulkiness
