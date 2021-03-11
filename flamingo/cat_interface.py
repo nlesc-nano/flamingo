@@ -7,6 +7,7 @@ API
 """
 import logging
 import shutil
+import tempfile
 import uuid
 from contextlib import redirect_stderr
 from functools import partial
@@ -21,6 +22,7 @@ import yaml
 from CAT.base import prep
 from dataCAT import prop_to_dataframe
 from more_itertools import chunked
+from nanoCAT.recipes import run_fast_sigma
 from scm.plams import Settings
 
 from .utils import Options, normalize_smiles
@@ -47,7 +49,9 @@ class PropertyMetadata(NamedTuple):
     dset: str  # Dset in the HDF5
 
 
-def call_cat(smiles: pd.Series, opts: Mapping[str, Any], cat_properties: Dict[str, Any]) -> Tuple[Path, Path]:
+def call_cat(
+        smiles: pd.Series, opts: Mapping[str, Any],
+        cat_properties: Dict[str, Any]) -> Tuple[Path, Path]:
     """Call cat with a given `config` and returns a dataframe with the results.
 
     Parameters
@@ -94,7 +98,6 @@ optional:
     qd:
        {generate_bulkiness_section(cat_properties)}
     ligand:
-       {generate_cosmo_section(cat_properties)}
        functional_groups:
           ['{opts["anchor"]}']
     database:
@@ -128,14 +131,6 @@ def generate_bulkiness_section(cat_properties: Dict[str, Any]) -> str:
     for key in {"h_lim", "d"}:
         string += f"{' ':>10}{key}: {replace_None(bulkiness[key])}\n"
     return string
-
-
-def generate_cosmo_section(cat_properties: Dict[str, Any]) -> str:
-    """Generate the CAT cosmo-rs input section."""
-    if "cosmo-rs" in cat_properties:
-        return "cosmo-rs: True"
-    else:
-        return "cosmo-rs: False"
 
 
 def compute_property_using_cat(
@@ -178,7 +173,7 @@ def compute_batch_bulkiness(
     """Compute bulkiness using CAT."""
     chunk = smiles[indices]
 
-    # Transform the smiles to normal representation
+    # Transform the smiles to standard representation
     chunk = chunk.apply(normalize_smiles)
 
     # compute and extract the bulkiness
@@ -193,19 +188,6 @@ def compute_batch_bulkiness(
     else:
         values = bulkiness.to_numpy()
     return values
-
-
-def compute_batch_cosmo_rs(
-        smiles: pd.Series, opts: Mapping[str, Any], indices: pd.Index) -> pd.Series:
-    """Compute the cosmo_rs properties of the `smiles` with `indices`."""
-    # chunk = smiles[indices]
-    # chunk_name = str(indices[0])
-
-    # # compute and extract the bulkiness
-    # metadata = PropertyMetadata("gamma", 'qd/properties/V_bulk')
-    # df = compute_property_using_cat(chunk, opts, chunk_name, metadata)
-
-    raise NotImplementedError
 
 
 def map_reduce(smiles: pd.Series, opts: Options,
@@ -245,24 +227,36 @@ def compute_bulkiness(smiles: pd.Series, opts: Options) -> np.ndarray:
     return results
 
 
-def compute_cosmo_rs(smiles: pd.Series, opts: Options) -> pd.DataFrame:
-    """Compute bulkiness using CAT.
-
-    It creates several instances of CAT using multiprocessing.
+def compute_cosmo_rs(
+        molecules: pd.DataFrame, solvents: Dict[str, str], workdir: str) -> pd.DataFrame:
+    """Compute Cosmo Rs properties using CAT.
 
     Parameters
     ----------
-    smiles
-        Pandas.Series with the smiles to compute
-    opts
-        Options to call CAT
+    molecules
+        Pandas.DataFrame with the smiles to compute
+    solvents
+        Dictionary with the Paths to the solvents data
+    workdir
+        Directory to write the temporal results
 
     Returns
     -------
     pandas.DataFrame 
         Values
 
-    """
-    results = map_reduce(smiles, opts, compute_batch_cosmo_rs, pd.concat)
+    example:
+    >>> smiles = pd.Series(['CO'])
+    >>> solvents = {"hexane": "$AMSRESOURCES/ADFCRS/Hexane.coskf",
+                    "toluene": "$AMSRESOURCES/ADFCRS/Toluene.coskf"}
+    >>> compute_cosmo_rs(smiles, solvents, Path("."))
 
-    return results
+    """
+    try:
+        with tempfile.TemporaryDirectory(prefix="cosmo_rs_", dir=workdir) as output_dir:
+            rs = run_fast_sigma(molecules.smiles, solvents, output_dir=output_dir, return_df=True)
+            molecules = pd.merge(molecules, rs, left_on="smiles", right_index=True)
+    except RuntimeError:
+        pass
+
+    return molecules

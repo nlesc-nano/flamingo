@@ -21,7 +21,7 @@ import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import QED
 
-from .cat_interface import compute_bulkiness
+from .cat_interface import compute_bulkiness, compute_cosmo_rs
 from .features.featurizer import generate_fingerprints
 from .log_config import configure_logger
 from .models.scscore import SCScorer
@@ -106,7 +106,7 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
     molecules["rdkit_molecules"] = converter(molecules.smiles)
 
     # Remove invalid molecules
-    molecules = convert_to_standard_representation(molecules)
+    molecules = convert_to_standard_representation(molecules, opts.sanitize_smiles)
 
     # Apply all the filters
     available_filters = {
@@ -114,7 +114,8 @@ def apply_filters(molecules: pd.DataFrame, opts: Options, output_file: Path) -> 
         "exclude_functional_groups": exclude_functional_groups,
         "bulkiness": filter_by_bulkiness,
         "scscore": filter_by_scscore,
-        "drug_likeness": filter_by_drug_likeness
+        "drug_likeness": filter_by_drug_likeness,
+        "cosmo_rs": filter_by_cosmo_rs,
     }
 
     for key, val in opts.filters.items():
@@ -248,6 +249,11 @@ def compute_druglikeness(mol: Chem.rdchem.Mol):
     except RuntimeError:
         results = [None] * len(KEYS_DRUGS_LIKENESS)
     return results
+
+
+def filter_by_cosmo_rs(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
+    """Compute Cosmo RS properties using CAT."""
+    return compute_cosmo_rs(molecules, opts.filters.cosmo_rs["solvents"], opts.workdir)
 
 
 def apply_predicate(molecules: pd.DataFrame, feature: str, predicate_info: Options) -> pd.DataFrame:

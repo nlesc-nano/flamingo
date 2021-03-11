@@ -119,14 +119,15 @@ def read_smile_and_sanitize(smile: str) -> Optional[Chem.rdchem.Mol]:
     return mol
 
 
-def convert_to_standard_representation(molecules: pd.DataFrame) -> pd.DataFrame:
+def convert_to_standard_representation(molecules: pd.DataFrame, sanitize_smiles: bool) -> pd.DataFrame:
     """Convert Smiles to standard representation."""
     molecules.dropna(inplace=True)
 
     # Convert smiles to the standard representation
-    back_converter = np.vectorize(mol2smile)
-    molecules.smiles = back_converter(molecules.rdkit_molecules)
-    molecules.dropna(inplace=True)
+    if sanitize_smiles:
+        back_converter = np.vectorize(mol2smile)
+        molecules.smiles = back_converter(molecules.rdkit_molecules)
+        molecules.dropna(inplace=True)
     return molecules
 
 

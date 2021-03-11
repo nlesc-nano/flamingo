@@ -49,6 +49,10 @@ SCHEMA_DRUG_LIKENESS = Schema({
     Optional("ALERTS", default=None): Or(SCHEMA_ORDERING, None)
 })
 
+SCHEMA_COSMO_RS = Schema({
+    "solvents": dict,
+})
+
 #: Schema to validate the filters to apply for screening
 SCHEMA_FILTERS = Schema({
     # Include or exclude one or more functional group using smiles
@@ -60,7 +64,9 @@ SCHEMA_FILTERS = Schema({
 
     Optional("scscore"): SCHEMA_ORDERING,
 
-    Optional("drug_likeness", default=None): Or(SCHEMA_DRUG_LIKENESS, None)
+    Optional("drug_likeness", default=None): Or(SCHEMA_DRUG_LIKENESS, None),
+
+    Optional("cosmo_rs"): SCHEMA_COSMO_RS
 })
 
 #: Schema to validate the input for screening
@@ -73,7 +79,6 @@ SCHEMA_SCREEN = Schema({
 
     # Functional group used as anchor
     Optional("anchor", default="O(C=O)[H]"): str,
-
 
     # path to the molecular coordinates of the Core to attach the ligands
     Optional("core"): str,
@@ -88,7 +93,11 @@ SCHEMA_SCREEN = Schema({
     Optional("batch_size", default=1000): int,
 
     # Run filters in Parallel
-    Optional("parallel", default=True): bool
+    Optional("parallel", default=True): bool,
+
+    # Clean up the smiles
+    Optional("sanitize_smiles", default=False): bool
+
 })
 
 DICT_ACTIONS = {"screen": SCHEMA_SCREEN}

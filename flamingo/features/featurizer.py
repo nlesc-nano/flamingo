@@ -21,6 +21,9 @@ from .atomic_features import (ELEMENTS, BONDS, compute_hybridization_index, dict
 __all__ = ["compute_molecular_graph_edges", "generate_fingerprints", "generate_molecular_features"]
 
 
+#: Floating point used to stored the features
+DTYPE = np.float32
+
 dictionary_functions = {
     "morgan": AllChem.GetMorganFingerprintAsBitVect,
     "atompair": AllChem.GetHashedAtomPairFingerprintAsBitVect,
@@ -39,7 +42,7 @@ NUMBER_GRAPH_FEATURES = NUMBER_ATOMIC_GRAPH_FEATURES + NUMBER_BOND_GRAPH_FEATURE
 def generate_molecular_features(mol: Chem.rdchem.Mol) -> Tuple[np.ndarray, np.ndarray]:
     """Generate both atomic and atom-pair features excluding the hydrogens.
 
-    Atom types: C N O F P S Cl Br I.
+    Atom types: H C N O F P S Cl Br I.
 
     Atomic features,
 
@@ -54,6 +57,7 @@ def generate_molecular_features(mol: Chem.rdchem.Mol) -> Tuple[np.ndarray, np.nd
 
     * Bond type: One hot vector of {Single,  Aromatic, Double, Triple} (size 4)
     * Same Ring: Whether the atoms are in the same ring (size 1)
+    * Is conjugated:  whether or not the bond is considered to be conjugated (size 1)
     * Distance: Euclidean distance between the pair (size 1)
     """
     number_atoms = mol.GetNumAtoms()
@@ -73,7 +77,7 @@ def generate_molecular_features(mol: Chem.rdchem.Mol) -> Tuple[np.ndarray, np.nd
         bond_features[2 * i] = feats
         bond_features[2 * i + 1] = feats
 
-    return atomic_features.astype(np.float32), bond_features.astype(np.float32)
+    return atomic_features.astype(DTYPE), bond_features.astype(DTYPE)
 
 
 def generate_bond_features(mol: Chem.rdchem.Mol, bond: Chem.rdchem.Bond) -> np.ndarray:
@@ -133,7 +137,7 @@ def generate_fingerprints(molecules: pd.Series, fingerprint: str, bits: int,
     it = (compute_fingerprint(molecules[i], fingerprint, bits, use_chirality) for i in molecules.index)
     result = np.fromiter(
         chain.from_iterable(it),
-        np.float32,
+        DTYPE,
         size * bits
     )
 
@@ -148,4 +152,4 @@ def compute_fingerprint(molecule, fingerprint: str, nbits: int, use_chirality: b
         bit_vector = fingerprint_calculator(molecule, 2, nBits=nbits, useChirality=use_chirality)
     else:
         bit_vector = fingerprint_calculator(molecule, nBits=nbits, includeChirality=use_chirality)
-    return np.fromiter(bit_vector.ToBitString(), np.float32, nbits)
+    return np.fromiter(bit_vector.ToBitString(), DTYPE, nbits)
