@@ -238,7 +238,7 @@ def test_cosmo_rs(tmp_path: Path, mocker: MockFixture) -> None:
     """Mock the call to cosmo rs."""
     smiles_file = "smiles_multiple_groups.csv"
     filters = {"cosmo_rs": {
-        "solvents": {"benzene": "$AMSRESOURCES/ADFCRS/Benzene.coskf"}}
+        "solvents": {"hexane": "$AMSRESOURCES/ADFCRS/Hexane.coskf"}}
     }
 
     # Mock the call to cosmo-rs

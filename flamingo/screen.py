@@ -253,7 +253,7 @@ def compute_druglikeness(mol: Chem.rdchem.Mol):
 
 def filter_by_cosmo_rs(molecules: pd.DataFrame, opts: Options) -> pd.DataFrame:
     """Compute Cosmo RS properties using CAT."""
-    df = compute_cosmo_rs(molecules.smiles, opts.filters.cosmo_rs["solvents"])
+    df = compute_cosmo_rs(molecules.smiles, opts.filters.cosmo_rs["solvents"], opts.workdir)
     raise RuntimeError("BOOM")
 
 

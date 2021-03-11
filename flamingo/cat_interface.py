@@ -7,6 +7,7 @@ API
 """
 import logging
 import shutil
+import tempfile
 import uuid
 from contextlib import redirect_stderr
 from functools import partial
@@ -224,7 +225,7 @@ def compute_bulkiness(smiles: pd.Series, opts: Options) -> np.ndarray:
     return results
 
 
-def compute_cosmo_rs(smiles: pd.Series, solvents: Dict[str, str]) -> pd.DataFrame:
+def compute_cosmo_rs(smiles: pd.Series, solvents: Dict[str, str], workdir: str) -> pd.DataFrame:
     """Compute Cosmo Rs properties using CAT.
 
     Parameters
@@ -233,6 +234,9 @@ def compute_cosmo_rs(smiles: pd.Series, solvents: Dict[str, str]) -> pd.DataFram
         Pandas.Series with the smiles to compute
     solvents
         Dictionary with the Paths to the solvents data
+    workdir
+        Directory to write the temporal results
+
     Returns
     -------
     pandas.DataFrame 
@@ -242,8 +246,10 @@ def compute_cosmo_rs(smiles: pd.Series, solvents: Dict[str, str]) -> pd.DataFram
     >>> smiles = pd.Series(['CO'])
     >>> solvents = {"hexane": "$AMSRESOURCES/ADFCRS/Hexane.coskf",
                     "toluene": "$AMSRESOURCES/ADFCRS/Toluene.coskf"}
-    >>> compute_cosmo_rs(smiles, solvents)
+    >>> compute_cosmo_rs(smiles, solvents, Path("."))
 
     """
-    run_fast_sigma(smiles.to_list(), solvents)
-    return pd.read_csv("cosmo-rs.csv", header=[0, 1], index_col=0)
+    output_dir = tempfile.mkdtemp(prefix="cosmo_rs_", dir=workdir)
+    df = run_fast_sigma(smiles.to_list(), solvents, output_dir=output_dir, return_df=True)
+    df.sort_index(inplace=True)
+    return df
