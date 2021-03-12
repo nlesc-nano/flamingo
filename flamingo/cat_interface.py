@@ -254,7 +254,7 @@ def compute_cosmo_rs(
     """
     try:
         with tempfile.TemporaryDirectory(prefix="cosmo_rs_", dir=workdir) as output_dir:
-            rs = run_fast_sigma(molecules.smiles, solvents, output_dir=output_dir, return_df=True, processes=1)
+            rs = run_fast_sigma(molecules.smiles, solvents, output_dir=output_dir, return_df=True)
             molecules = pd.merge(molecules, rs, left_on="smiles", right_index=True)
     except RuntimeError:
         pass
