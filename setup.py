@@ -16,21 +16,20 @@ with open('README.rst') as readme_file:
 
 try:
     importlib.import_module("rdkit")
-    importlib.import_module("h5py")
 except ModuleNotFoundError:
     exc = ModuleNotFoundError(
-        """'flamingo' requires the 'rdkit' package: https://anaconda.org/conda-forge/rdkit
-and the h5py package: https://anaconda.org/conda-forge/h5py"""
+        "'flamingo' requires the 'rdkit' package: https://anaconda.org/conda-forge/rdkit"
     )
     exc.__cause__ = None
     raise exc
 
 
 setup(
-    name='flamingo',
+    name='nlesc-flamingo',
     version=version['__version__'],
     description="Compute and filter molecular properties",
     long_description=README + '\n\n',
+    long_description_content_type='text/x-rst',
     author="Felipe Zapata",
     author_email='f.zapata@esciencecenter.nl',
     url='https://github.com/https://github.com/nlesc-nano/flamingo',
@@ -48,21 +47,34 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Typing :: Typed',
     ],
+    python_requires='>=3.7',
     install_requires=[
-        'CAT@git+https://github.com/nlesc-nano/CAT@master',
-        'nano-CAT@git+https://github.com/nlesc-nano/nano-CAT@master',
-        'data-CAT@git+https://github.com/nlesc-nano/data-CAT@master',
-        'more_itertools', 'numpy', 'pandas',
-        'pyyaml>=5.1.1', 'schema', 'typing_extensions'],
+        'nlesc-CAT>=0.10.0',
+        'nano-CAT>=0.7.0',
+        'data-CAT>=0.7.0',
+        'plams>=1.5.1',
+        'more_itertools',
+        'numpy',
+        'pandas',
+        'pyyaml>=5.1.1',
+        'schema!=0.7.5',
+        'typing_extensions',
+        'h5py',
+    ],
     entry_points={
         'console_scripts': [
             'smiles_screener=flamingo.screen:main'
         ]
     },
     package_data={
-        'flamingo': ['data/scscore/full_reaxys_model_1024bool/model.ckpt-10654.as_numpy.json.gz',
-        'data/scscore/full_reaxys_model_2048bool/model.ckpt-10654.as_numpy.json.gz']
+        'flamingo': [
+            'data/scscore/full_reaxys_model_1024bool/model.ckpt-10654.as_numpy.json.gz',
+            'data/scscore/full_reaxys_model_2048bool/model.ckpt-10654.as_numpy.json.gz',
+            'py.typed',
+        ]
     },
     data_files=[('citation/flamingo', ['CITATION.cff'])],
     extras_require={

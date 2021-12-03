@@ -54,7 +54,7 @@ Package installation
 Finally install the package:
 
 - Install **flamingo** using pip:
-  - ``pip install git+https://github.com/nlesc-nano/flamingo.git@master``
+  - ``pip install nlesc-flamingo``
 
 Now you are ready to use *flamingo*.
 
