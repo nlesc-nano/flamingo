@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
 
+0.3.1 [unreleased]
+******************
+* *placeholder*.
+
+
 0.3.0 [03/12/2021]
 ******************
 * Release flamingo on pypi (#64)
