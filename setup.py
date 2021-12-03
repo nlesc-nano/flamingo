@@ -51,11 +51,16 @@ setup(
         'Programming Language :: Python :: 3.9',
     ],
     install_requires=[
-        'CAT@git+https://github.com/nlesc-nano/CAT@master',
-        'nano-CAT@git+https://github.com/nlesc-nano/nano-CAT@master',
-        'data-CAT@git+https://github.com/nlesc-nano/data-CAT@master',
-        'more_itertools', 'numpy', 'pandas',
-        'pyyaml>=5.1.1', 'schema', 'typing_extensions'],
+        'nlesc-CAT>=0.10.0',
+        'nano-CAT>=0.7.0',
+        'data-CAT>=0.7.0',
+        'more_itertools',
+        'numpy',
+        'pandas',
+        'pyyaml>=5.1.1',
+        'schema',
+        'typing_extensions',
+    ],
     entry_points={
         'console_scripts': [
             'smiles_screener=flamingo.screen:main'
