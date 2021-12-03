@@ -29,6 +29,7 @@ setup(
     version=version['__version__'],
     description="Compute and filter molecular properties",
     long_description=README + '\n\n',
+    long_description_content_type='text/x-rst',
     author="Felipe Zapata",
     author_email='f.zapata@esciencecenter.nl',
     url='https://github.com/https://github.com/nlesc-nano/flamingo',
