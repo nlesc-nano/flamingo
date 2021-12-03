@@ -49,6 +49,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Typing :: Typed',
     ],
     install_requires=[
         'nlesc-CAT>=0.10.0',
@@ -67,8 +68,11 @@ setup(
         ]
     },
     package_data={
-        'flamingo': ['data/scscore/full_reaxys_model_1024bool/model.ckpt-10654.as_numpy.json.gz',
-        'data/scscore/full_reaxys_model_2048bool/model.ckpt-10654.as_numpy.json.gz']
+        'flamingo': [
+            'data/scscore/full_reaxys_model_1024bool/model.ckpt-10654.as_numpy.json.gz',
+            'data/scscore/full_reaxys_model_2048bool/model.ckpt-10654.as_numpy.json.gz',
+            'py.typed',
+        ]
     },
     data_files=[('citation/flamingo', ['CITATION.cff'])],
     extras_require={
