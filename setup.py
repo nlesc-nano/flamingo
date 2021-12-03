@@ -53,6 +53,7 @@ setup(
         'nlesc-CAT>=0.10.0',
         'nano-CAT>=0.7.0',
         'data-CAT>=0.7.0',
+        'plams>=1.5.1',
         'more_itertools',
         'numpy',
         'pandas',
