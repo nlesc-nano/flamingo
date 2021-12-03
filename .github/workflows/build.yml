@@ -26,7 +26,7 @@ jobs:
         conda-channels: anaconda
     - run: conda --version
     - run: which python
-    - run: conda install rdkit h5py -c conda-forge
+    - run: conda install rdkit -c conda-forge
 
     - name: Install the package
       run: pip install .[test,doc]
