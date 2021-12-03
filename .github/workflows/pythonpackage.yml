@@ -1,0 +1,66 @@
+name: Tests
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+
+jobs:
+    build:
+        name: ${{ matrix.os }} (py ${{ matrix.version }}${{ matrix.special }})
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, macos-latest]
+                version: ["3.7", "3.8", "3.9"]
+                special: [""]
+                include:
+                    -   os: ubuntu-latest
+                        special: "; pre-release"
+                        version: "3.9"
+        steps:
+            -   name: Cancel Previous Runs
+                uses: styfle/cancel-workflow-action@0.9.1
+                with:
+                    access_token: ${{ github.token }}
+
+            -   uses: actions/checkout@v2
+
+            -   name: Setup Conda
+                uses: s-weigand/setup-conda@v1
+                with:
+                    update-conda: false
+
+            -   name: Install dependencies
+                run: |
+                    conda create -n test -c conda-forge python=${{ matrix.version }} rdkit
+                    source $CONDA/bin/activate test
+                    case "${{ matrix.special }}" in
+                        "; pre-release")
+                            pip install -e .[test,doc] --pre --upgrade --force-reinstall
+                            pip install git+https://github.com/SCM-NV/PLAMS@master --upgrade
+                            ;;
+                        *)
+                            pip install -e .[test,doc] ;;
+                    esac
+
+            -   name: Conda info
+                run: |
+                    source $CONDA/bin/activate test
+                    conda info
+
+            -   name: Installed packages
+                run: conda list -n test
+
+            -   name: Run tests
+                run: |
+                    source $CONDA/bin/activate test
+                    pytest
+
+            -   name: Run codecov
+                uses: codecov/codecov-action@v2
+                with:
+                    file: ./coverage.xml
+                    name: codecov-umbrella
