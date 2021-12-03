@@ -59,7 +59,7 @@ setup(
         'numpy',
         'pandas',
         'pyyaml>=5.1.1',
-        'schema',
+        'schema!=0.7.5',
         'typing_extensions',
         'h5py',
     ],
