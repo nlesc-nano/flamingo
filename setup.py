@@ -50,6 +50,7 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Typing :: Typed',
     ],
+    python_requires='>=3.7',
     install_requires=[
         'nlesc-CAT>=0.10.0',
         'nano-CAT>=0.7.0',
