@@ -27,7 +27,7 @@ and the h5py package: https://anaconda.org/conda-forge/h5py"""
 
 
 setup(
-    name='flamingo',
+    name='nlesc-flamingo',
     version=version['__version__'],
     description="Compute and filter molecular properties",
     long_description=README + '\n\n',

@@ -2,9 +2,8 @@
 
 import logging
 import sys
+import importlib
 from pathlib import Path
-
-import pkg_resources
 
 __all__ = ["configure_logger"]
 
@@ -13,6 +12,10 @@ logger = logging.getLogger(__name__)
 
 def configure_logger(workdir: Path, package_name: str) -> None:
     """Set the logging infrasctucture."""
+    pkg = sys.modules.get(package_name)
+    if pkg is None:
+        pkg = importlib.import_module(package_name)
+
     file_log = workdir / f'{package_name}_output.log'
     logging.basicConfig(filename=file_log, level=logging.INFO,
                         format='%(asctime)s  %(message)s',
@@ -20,8 +23,8 @@ def configure_logger(workdir: Path, package_name: str) -> None:
     handler = logging.StreamHandler()
     handler.terminator = ""
 
-    version = pkg_resources.get_distribution(package_name).version
-    path = pkg_resources.resource_filename(package_name, '')
+    version = getattr(pkg, "__version__", "UNKNOWN")
+    path = Path(pkg.__file__).parent
 
     logger.info(f"Using {package_name} version: {version}\n")
     logger.info(f"{package_name} path is: {path}\n")
