@@ -16,11 +16,9 @@ with open('README.rst') as readme_file:
 
 try:
     importlib.import_module("rdkit")
-    importlib.import_module("h5py")
 except ModuleNotFoundError:
     exc = ModuleNotFoundError(
-        """'flamingo' requires the 'rdkit' package: https://anaconda.org/conda-forge/rdkit
-and the h5py package: https://anaconda.org/conda-forge/h5py"""
+        "'flamingo' requires the 'rdkit' package: https://anaconda.org/conda-forge/rdkit"
     )
     exc.__cause__ = None
     raise exc
@@ -61,6 +59,7 @@ setup(
         'pyyaml>=5.1.1',
         'schema',
         'typing_extensions',
+        'h5py',
     ],
     entry_points={
         'console_scripts': [
