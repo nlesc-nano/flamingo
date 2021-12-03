@@ -6,6 +6,8 @@
    :target: https://codecov.io/gh/nlesc-nano/flamingo
 .. image:: https://zenodo.org/badge/300545275.svg
    :target: https://zenodo.org/badge/latestdoi/300545275
+.. image:: https://badge.fury.io/py/nlesc-flamingo.svg
+   :target: https://badge.fury.io/py/nlesc-flamingo
 
 ########
 flamingo
