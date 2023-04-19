@@ -14,16 +14,6 @@ with open(os.path.join(HERE, 'flamingo', '__version__.py')) as f:
 with open('README.rst') as readme_file:
     README = readme_file.read()
 
-try:
-    importlib.import_module("rdkit")
-except ModuleNotFoundError:
-    exc = ModuleNotFoundError(
-        "'flamingo' requires the 'rdkit' package: https://anaconda.org/conda-forge/rdkit"
-    )
-    exc.__cause__ = None
-    raise exc
-
-
 setup(
     name='nlesc-flamingo',
     version=version['__version__'],
@@ -65,6 +55,7 @@ setup(
         'schema!=0.7.5',
         'typing_extensions',
         'h5py',
+        'rdkit',
     ],
     entry_points={
         'console_scripts': [
