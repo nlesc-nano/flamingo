@@ -2,13 +2,13 @@
 SCScore model taken from: https://github.com/connorcoley/scscore.
 """
 
+import os
 import gzip
 import json
 import logging
 
 import numpy as np
-import pkg_resources
-
+from .. import __file__ as _flamingo_file
 
 __all__ = ["SCScorer"]
 
@@ -23,7 +23,7 @@ def sigmoid(x: np.ndarray) -> np.ndarray:
 def get_model_data(name: str) -> str:
     """look for the data for a given model with `name`."""
     path = f"data/scscore/full_reaxys_model_{name}/model.ckpt-10654.as_numpy.json.gz"
-    return pkg_resources.resource_filename("flamingo", path)
+    return os.path.join(os.path.dirname(_flamingo_file), path)
 
 
 class SCScorer:
