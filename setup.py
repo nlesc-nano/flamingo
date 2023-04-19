@@ -72,7 +72,7 @@ setup(
     data_files=[('citation/flamingo', ['CITATION.cff'])],
     extras_require={
         'test': ['coverage', 'mypy', 'pycodestyle', 'pytest>=3.9', 'pytest-cov',
-                 'pytest-mock'],
+                 'pytest-mock', 'types-setuptools', 'types-pyyaml'],
         'doc': ['sphinx', 'sphinx-autodoc-typehints', 'sphinx_rtd_theme',
                 'nbsphinx']
     }
