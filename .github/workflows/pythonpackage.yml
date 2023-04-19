@@ -15,6 +15,9 @@ defaults:
     run:
         shell: bash
 
+env:
+    PY_COLORS: "1"
+
 jobs:
     build:
         name: ${{ matrix.os }} (py ${{ matrix.version }}${{ matrix.special }})
