@@ -50,7 +50,7 @@ setup(
         'plams>=1.5.1',
         'more_itertools',
         'numpy',
-        'pandas',
+        'pandas<2.0.0',
         'pyyaml>=5.1.1',
         'schema!=0.7.5',
         'typing_extensions',
