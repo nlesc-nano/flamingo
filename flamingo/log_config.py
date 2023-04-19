@@ -24,7 +24,7 @@ def configure_logger(workdir: Path, package_name: str) -> None:
     handler.terminator = ""
 
     version = getattr(pkg, "__version__", "UNKNOWN")
-    path = Path(pkg.__file__).parent
+    path = Path(pkg.__file__).parent  # type: ignore[arg-type]
 
     logger.info(f"Using {package_name} version: {version}\n")
     logger.info(f"{package_name} path is: {path}\n")

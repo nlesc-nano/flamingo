@@ -14,16 +14,6 @@ with open(os.path.join(HERE, 'flamingo', '__version__.py')) as f:
 with open('README.rst') as readme_file:
     README = readme_file.read()
 
-try:
-    importlib.import_module("rdkit")
-except ModuleNotFoundError:
-    exc = ModuleNotFoundError(
-        "'flamingo' requires the 'rdkit' package: https://anaconda.org/conda-forge/rdkit"
-    )
-    exc.__cause__ = None
-    raise exc
-
-
 setup(
     name='nlesc-flamingo',
     version=version['__version__'],
@@ -48,6 +38,8 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
         'Typing :: Typed',
     ],
     python_requires='>=3.7',
@@ -58,11 +50,12 @@ setup(
         'plams>=1.5.1',
         'more_itertools',
         'numpy',
-        'pandas',
+        'pandas<2.0.0',
         'pyyaml>=5.1.1',
         'schema!=0.7.5',
         'typing_extensions',
         'h5py',
+        'rdkit',
     ],
     entry_points={
         'console_scripts': [
@@ -79,7 +72,7 @@ setup(
     data_files=[('citation/flamingo', ['CITATION.cff'])],
     extras_require={
         'test': ['coverage', 'mypy', 'pycodestyle', 'pytest>=3.9', 'pytest-cov',
-                 'pytest-mock'],
+                 'pytest-mock', 'types-setuptools', 'types-pyyaml'],
         'doc': ['sphinx', 'sphinx-autodoc-typehints', 'sphinx_rtd_theme',
                 'nbsphinx']
     }
